@@ -40,3 +40,7 @@ USER 1000
 
 ENTRYPOINT ["/patch/entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
+
+LABEL org.opencontainers.image.source=https://github.com/retropex/mempool
+LABEL org.opencontainers.image.description="Container for orangepill.ovh only"
+LABEL org.opencontainers.image.licenses=MIT
