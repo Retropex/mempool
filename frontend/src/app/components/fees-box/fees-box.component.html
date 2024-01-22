@@ -33,6 +33,32 @@
       </div>
     </div>
   </div>
+  <p></p>
+  <a href="https://mempool.space">mempool.space fee estimation</a>
+  <p></p>
+  <div class="fee-estimation-container">
+    <div class="item">
+      <div class="card-text">
+        <div class="fee-text"><app-fee-rate [fee]="recommendedFees.economyFee"  rounding="1.0-0"></app-fee-rate></div>
+      </div>
+    </div>
+    <div class="band-separator"></div>
+    <div class="item">
+      <div class="card-text">
+        <div class="fee-text"><app-fee-rate [fee]="recommendedFees.hourFee"  rounding="1.0-0"></app-fee-rate></div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="card-text">
+        <div class="fee-text"><app-fee-rate [fee]="recommendedFees.halfHourFee"  rounding="1.0-0"></app-fee-rate></div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="card-text">
+        <div class="fee-text"><app-fee-rate [fee]="recommendedFees.fastestFee"  rounding="1.0-0"></app-fee-rate></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <ng-template #loadingFees>
