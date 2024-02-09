@@ -44,8 +44,8 @@ export const defaultMarginalFeeColors = defaultFeeColors.map((color) => darken(d
 export const defaultAuditColors = {
   censored: hexToColor('f344df'),
   missing: darken(desaturate(hexToColor('f344df'), 0.3), 0.7),
-  added: hexToColor('0099ff'),
-  selected: darken(desaturate(hexToColor('0099ff'), 0.3), 0.7),
+  added: hexToColor('9310ea'),
+  selected: darken(desaturate(hexToColor('9310ea'), 0.3), 0.7),
   accelerated: hexToColor('8F5FF6'),
 };
 
