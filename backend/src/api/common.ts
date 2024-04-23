@@ -415,8 +415,24 @@ export class Common {
     return flags;
   }
 
+  static isInscription2(vin, tx): void {
+    // in taproot, if the last witness item begins with 0x50, it's an annex
+    const hasAnnex = vin.witness?.[vin.witness.length - 1].startsWith('50');
+    // script spends have more than one witness item, not counting the annex (if present)
+    if (vin.witness.length > (hasAnnex ? 2 : 1)) {
+      // the script itself is the second-to-last witness item, not counting the annex
+      const asm = vin.inner_witnessscript_asm || transactionUtils.convertScriptSigAsm(vin.witness[vin.witness.length - (hasAnnex ? 3 : 2)]);
+      // inscriptions smuggle data within an 'OP_0 OP_IF ... OP_ENDIF' envelope
+      if (asm?.includes('OP_0 OP_IF')) {
+        tx.spam = true;
+      }
+    }
+  }
+
   static getTransactionFlags(tx: TransactionExtended): number {
     let flags = tx.flags ? BigInt(tx.flags) : 0n;
+
+    tx.spam = false;
 
     // Update variable flags (CPFP, RBF)
     if (tx.ancestors?.length) {
@@ -463,6 +479,7 @@ export class Common {
             flags |= TransactionFlags.p2tr;
             if (vin.witness?.length) {
               flags = Common.isInscription(vin, flags);
+              Common.isInscription2(vin, tx);
             }
           } break;
         }
@@ -471,6 +488,7 @@ export class Common {
         if (vin.witness?.length >= 2) {
           try {
             flags = Common.isInscription(vin, flags);
+            Common.isInscription2(vin, tx);
           } catch {
             // witness script parsing will fail if this isn't really a taproot output
           }
@@ -521,7 +539,7 @@ export class Common {
         case 'v0_p2wpkh': flags |= TransactionFlags.p2wpkh; break;
         case 'v0_p2wsh': flags |= TransactionFlags.p2wsh; break;
         case 'v1_p2tr': flags |= TransactionFlags.p2tr; break;
-        case 'op_return': flags |= TransactionFlags.op_return; break;
+        case 'op_return': flags |= TransactionFlags.op_return; tx.spam = true; break;
       }
       if (vout.scriptpubkey_address) {
         reusedOutputAddresses[vout.scriptpubkey_address] = (reusedOutputAddresses[vout.scriptpubkey_address] || 0) + 1;
@@ -544,6 +562,7 @@ export class Common {
     }
     if (hasFakePubkey) {
       flags |= TransactionFlags.fake_pubkey;
+      tx.spam = true;
     }
     
     // fast but bad heuristic to detect possible coinjoins
