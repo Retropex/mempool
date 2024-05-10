@@ -24,8 +24,8 @@ class Audit {
     let matchedWeight = 0;
     let projectedWeight = 0;
 
-    let numSpamTx = 0;
-    let numTX = 0;
+    let spamWeight = 0;
+    let blkWeight = 0;
 
     const inBlock = {};
     const inTemplate = {};
@@ -71,10 +71,13 @@ class Audit {
     }
 
     for (const tx of transactions){
-      numTX += 1;
+      blkWeight += tx.weight;
+    }
+
+    for (const tx of transactions){
       if(tx.spam !== undefined){
         if (tx.spam == true){
-          numSpamTx += 1;
+          spamWeight += tx.weight;
         }
       }
     }
@@ -169,7 +172,7 @@ class Audit {
     const numCensored = Object.keys(isCensored).length;
     const numMatches = matches.length - 1; // adjust for coinbase tx
     let score = 0;
-    score = (Math.abs((numSpamTx/numTX)-1));
+    score = (Math.abs((spamWeight/blkWeight)-1));
     const similarity = projectedWeight ? matchedWeight / projectedWeight : 1;
 
     return {
