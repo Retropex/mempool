@@ -198,7 +198,7 @@
         </td>
         <td *ngIf="!stateService.env.MINING_DASHBOARD && stateService.env.BASE_MODULE === 'mempool'">
           <span placement="bottom" class="badge"
-            [class]="block.extras.pool.slug === 'unknown' ? 'badge-secondary' : 'badge-primary'">
+            [class]="block.extras.pool.slug === 'ocean' ? 'badge-primary' : 'badge-danger'">
             {{ block.extras.pool.name }}
         </span>
         </td>
