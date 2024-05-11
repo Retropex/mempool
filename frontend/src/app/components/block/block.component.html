@@ -58,9 +58,10 @@
                 <td i18n="block.weight">Weight</td>
                 <td [innerHTML]="'&lrm;' + (block.weight | wuBytes: 2)"></td>
               </tr>
-              <tr *ngIf="auditAvailable">
-                <td><ng-container i18n="latest-blocks.health">Health</ng-container><a class="info-link" [routerLink]="['/docs/faq' | relativeUrl ]" fragment="what-is-block-health"><fa-icon [icon]="['fas', 'info-circle']" [fixedWidth]="true"></fa-icon></a></td>
+              <tr>
+                <td><ng-container i18n="latest-blocks.health">Health</ng-container></td>
                 <td>
+                  <a>TXs count health: </a>
                   <span
                     class="health-badge badge"
                     [class.badge-success]="blockAudit?.matchRate >= 99"
@@ -68,6 +69,15 @@
                     [class.badge-danger]="blockAudit?.matchRate < 75"
                     *ngIf="blockAudit?.matchRate != null; else nullHealth"
                   >{{ blockAudit?.matchRate }}%</span>
+                  <p></p>
+                  <a>WU health: </a>
+                  <span
+                    class="health-badge badge"
+                    [class.badge-success]="blockAudit?.matchRateWU >= 99"
+                    [class.badge-warning]="blockAudit?.matchRateWU >= 75 && blockAudit?.matchRateWU < 99"
+                    [class.badge-danger]="blockAudit?.matchRateWU < 75"
+                    *ngIf="blockAudit?.matchRate != null; else nullHealth"
+                  >{{ blockAudit?.matchRateWU }}%</span>
                   <ng-template #nullHealth>
                     <ng-container *ngIf="!isLoadingOverview; else loadingHealth">
                       <span class="health-badge badge badge-secondary" i18n="unknown">Unknown</span>

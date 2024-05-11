@@ -40,6 +40,7 @@ export interface BlockAudit {
   prioritizedTxs: string[],
   acceleratedTxs: string[],
   matchRate: number,
+  matchRateWU: number,
   expectedFees?: number,
   expectedWeight?: number,
   template?: any[];
@@ -60,6 +61,7 @@ export interface TransactionAudit {
 export interface AuditScore {
   hash: string,
   matchRate?: number,
+  matchRateWU?: number,
   expectedFees?: number
   expectedWeight?: number
 }
@@ -289,6 +291,7 @@ export interface BlockExtension {
   feeRange: number[]; // fee rate percentiles
   reward: number;
   matchRate: number | null;
+  matchRateWU: number | null;
   expectedFees: number | null;
   expectedWeight: number | null;
   similarity?: number;

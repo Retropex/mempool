@@ -6,9 +6,9 @@ import { BlockAudit, AuditScore, TransactionAudit } from '../mempool.interfaces'
 class BlocksAuditRepositories {
   public async $saveAudit(audit: BlockAudit): Promise<void> {
     try {
-      await DB.query(`INSERT INTO blocks_audits(time, height, hash, missing_txs, added_txs, prioritized_txs, fresh_txs, sigop_txs, fullrbf_txs, accelerated_txs, match_rate, expected_fees, expected_weight)
-        VALUE (FROM_UNIXTIME(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [audit.time, audit.height, audit.hash, JSON.stringify(audit.missingTxs),
-          JSON.stringify(audit.addedTxs), JSON.stringify(audit.prioritizedTxs), JSON.stringify(audit.freshTxs), JSON.stringify(audit.sigopTxs), JSON.stringify(audit.fullrbfTxs), JSON.stringify(audit.acceleratedTxs), audit.matchRate, audit.expectedFees, audit.expectedWeight]);
+      await DB.query(`INSERT INTO blocks_audits(time, height, hash, missing_txs, added_txs, prioritized_txs, fresh_txs, sigop_txs, fullrbf_txs, accelerated_txs, match_rate, match_rateWU, expected_fees, expected_weight)
+        VALUE (FROM_UNIXTIME(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [audit.time, audit.height, audit.hash, JSON.stringify(audit.missingTxs),
+          JSON.stringify(audit.addedTxs), JSON.stringify(audit.prioritizedTxs), JSON.stringify(audit.freshTxs), JSON.stringify(audit.sigopTxs), JSON.stringify(audit.fullrbfTxs), JSON.stringify(audit.acceleratedTxs), audit.matchRate, audit.matchRateWU, audit.expectedFees, audit.expectedWeight]);
     } catch (e: any) {
       if (e.errno === 1062) { // ER_DUP_ENTRY - This scenario is possible upon node backend restart
         logger.debug(`Cannot save block audit for block ${audit.hash} because it has already been indexed, ignoring`);
@@ -72,6 +72,7 @@ class BlocksAuditRepositories {
         fullrbf_txs as fullrbfTxs,
         accelerated_txs as acceleratedTxs,
         match_rate as matchRate,
+        match_rateWU as matchRateWU,
         expected_fees as expectedFees,
         expected_weight as expectedWeight
         FROM blocks_audits
@@ -137,6 +138,20 @@ class BlocksAuditRepositories {
     try {
       const [rows]: any[] = await DB.query(
         `SELECT hash, match_rate as matchRate, expected_fees as expectedFees, expected_weight as expectedWeight
+        FROM blocks_audits
+        WHERE blocks_audits.hash = ?
+      `, [hash]);
+      return rows[0];
+    } catch (e: any) {
+      logger.err(`Cannot fetch block audit from db. Reason: ` + (e instanceof Error ? e.message : e));
+      throw e;
+    }
+  }
+
+  public async $getBlockAuditScoreWU(hash: string): Promise<AuditScore> {
+    try {
+      const [rows]: any[] = await DB.query(
+        `SELECT hash, match_rateWU as matchRateWU
         FROM blocks_audits
         WHERE blocks_audits.hash = ?
       `, [hash]);

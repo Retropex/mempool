@@ -1149,6 +1149,7 @@ class DatabaseMigration {
       missing_txs JSON NOT NULL,
       added_txs JSON NOT NULL,
       match_rate float unsigned NOT NULL,
+      match_rateWU float unsigned NOT NULL,
       PRIMARY KEY (hash),
       INDEX (height)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;

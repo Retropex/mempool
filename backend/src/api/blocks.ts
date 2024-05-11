@@ -352,6 +352,12 @@ class Blocks {
           extras.expectedWeight = auditScore.expectedWeight;
         }
       }
+      if (config.MEMPOOL.AUDIT) {
+        const auditScore = await BlocksAuditsRepository.$getBlockAuditScoreWU(block.id);
+        if (auditScore != null) {
+          extras.matchRateWU = auditScore.matchRateWU;
+        }
+      }
     }
 
     blk.extras = <BlockExtension>extras;
