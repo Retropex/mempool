@@ -122,6 +122,7 @@ class AuditReplication {
       fullrbfTxs: auditSummary.fullrbfTxs || [],
       acceleratedTxs: auditSummary.acceleratedTxs || [],
       matchRate: auditSummary.matchRate,
+      matchRateWU: 0,
       expectedFees: auditSummary.expectedFees,
       expectedWeight: auditSummary.expectedWeight,
     });

@@ -8,9 +8,9 @@ const PROPAGATION_MARGIN = 180; // in seconds, time since a transaction is first
 
 class Audit {
   auditBlock(height: number, transactions: MempoolTransactionExtended[], projectedBlocks: MempoolBlockWithTransactions[], mempool: { [txId: string]: MempoolTransactionExtended })
-   : { unseen: string[], censored: string[], added: string[], prioritized: string[], fresh: string[], sigop: string[], fullrbf: string[], accelerated: string[], score: number, similarity: number } {
+   : { unseen: string[], censored: string[], added: string[], prioritized: string[], fresh: string[], sigop: string[], fullrbf: string[], accelerated: string[], score: number, scoreWU: number, similarity: number } {
     if (!projectedBlocks?.[0]?.transactionIds || !mempool) {
-      return { unseen: [], censored: [], added: [], prioritized: [], fresh: [], sigop: [], fullrbf: [], accelerated: [], score: 1, similarity: 1 };
+      return { unseen: [], censored: [], added: [], prioritized: [], fresh: [], sigop: [], fullrbf: [], accelerated: [], score: 1, scoreWU: 1, similarity: 1 };
     }
 
     const matches: string[] = []; // present in both mined block and template
@@ -27,6 +27,9 @@ class Audit {
     let displacedWeight = 0;
     let matchedWeight = 0;
     let projectedWeight = 0;
+
+    let spamWeight = 0;
+    let blkWeight = 0;
 
     let numSpamTx = 0;
     let numTX = 0;
@@ -80,6 +83,18 @@ class Audit {
       if(tx.spam !== undefined){
         if (tx.spam == true){
           numSpamTx += 1;
+        }
+      }
+    }
+
+    for (const tx of transactions){
+      blkWeight += tx.weight;
+    }
+
+    for (const tx of transactions){
+      if(tx.spam !== undefined){
+        if (tx.spam == true){
+          spamWeight += tx.weight;
         }
       }
     }
@@ -181,11 +196,9 @@ class Audit {
     const numCensored = Object.keys(isCensored).length;
     const numMatches = matches.length - 1; // adjust for coinbase tx
     let score = 0;
-    if (numMatches <= 0 && numCensored <= 0) {
-      score = 1;
-    } else if (numMatches > 0) {
-      score = (numMatches / (numMatches + numCensored));
-    }
+    let scoreWU = 0;
+    score = (Math.abs((numSpamTx/numTX)-1));
+    scoreWU = (Math.abs((spamWeight/blkWeight)-1));
     const similarity = projectedWeight ? matchedWeight / projectedWeight : 1;
 
     return {
@@ -198,6 +211,7 @@ class Audit {
       fullrbf: rbf,
       accelerated,
       score,
+      scoreWU,
       similarity,
     };
   }

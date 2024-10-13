@@ -222,6 +222,7 @@ export interface BlockAudit extends BlockExtended {
   fullrbfTxs: string[],
   acceleratedTxs: string[],
   matchRate: number,
+  matchRateWU: number,
   expectedFees: number,
   expectedWeight: number,
   feeDelta?: number,

@@ -975,8 +975,9 @@ class WebsocketHandler {
       }
 
       if (Common.indexingEnabled()) {
-        const { unseen, censored, added, prioritized, fresh, sigop, fullrbf, accelerated, score, similarity } = Audit.auditBlock(block.height, blockTransactions, projectedBlocks, auditMempool);
+        const { unseen, censored, added, prioritized, fresh, sigop, fullrbf, accelerated, score, scoreWU, similarity } = Audit.auditBlock(block.height, blockTransactions, projectedBlocks, auditMempool);
         const matchRate = Math.round(score * 100 * 100) / 100;
+        const matchRateWU = Math.round(scoreWU * 100 * 100) / 100;
 
         const stripped = projectedBlocks[0]?.transactions ? projectedBlocks[0].transactions : [];
 
@@ -1010,6 +1011,7 @@ class WebsocketHandler {
           fullrbfTxs: fullrbf,
           acceleratedTxs: accelerated,
           matchRate: matchRate,
+          matchRateWU: matchRateWU,
           expectedFees: totalFees,
           expectedWeight: totalWeight,
         });
