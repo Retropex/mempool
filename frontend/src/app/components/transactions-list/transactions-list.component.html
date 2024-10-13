@@ -82,7 +82,6 @@
                   </div>
                 </td>
                 <td class="text-right nowrap amount" [class]="{large: vin?.prevout?.value > 1000000000 || vin.isInscription}">
-                  <button *ngIf="vin.isInscription" (click)="toggleOrdData(tx.txid, 'vin', vindex)" type="button" class="btn btn-sm badge badge-ord primary" style="margin-right: 10px;">Inscription</button>
                   <ng-template [ngIf]="vin.prevout && vin.prevout.asset && vin.prevout.asset !== nativeAssetId" [ngIfElse]="defaultOutput">
                     <div *ngIf="assetsMinimal && assetsMinimal[vin.prevout.asset] else assetVinNotFound">
                       <ng-container *ngTemplateOutlet="assetBox; context:{ $implicit: vin.prevout }"></ng-container>
@@ -248,7 +247,6 @@
                       <ng-template [ngIf]="vout.scriptpubkey_type === 'op_return'" [ngIfElse]="otherPubkeyType">
                         OP_RETURN&nbsp;
                         @if (vout.isRunestone) {
-                          <button (click)="toggleOrdData(tx.txid, 'vout', vindex)" type="button" class="btn btn-sm badge badge-ord">Runestone</button>
                         } @else {
                           <a placement="bottom" [ngbTooltip]="vout.scriptpubkey_asm | hex2ascii"><span *ngIf="vout.scriptpubkey_asm !== 'OP_RETURN'" class="badge badge-secondary scriptmessage">{{ vout.scriptpubkey_asm | hex2ascii }}</span></a>
                         }
