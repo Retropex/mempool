@@ -1,3 +1,4 @@
+import { couldStartTrivia } from 'typescript';
 import config from '../config';
 import logger from '../logger';
 import { MempoolTransactionExtended, MempoolBlockWithTransactions } from '../mempool.interfaces';
@@ -45,6 +46,10 @@ class Audit {
     let matchedWeight = 0;
     let projectedWeight = 0;
 
+    let countCb = 0;
+    let spamWeight = 0;
+    let blkWeight = 0;
+
     const inBlock = {};
     const inTemplate = {};
 
@@ -87,6 +92,22 @@ class Audit {
       displacedWeight += (4000 - transactions[0].weight);
       projectedWeight += transactions[0].weight;
       matchedWeight += transactions[0].weight;
+    }
+
+
+    for (const tx of transactions){
+      blkWeight += tx.weight;
+    }
+
+    for (const tx of transactions){
+      if (countCb !== 0){
+        if(tx.spam !== undefined){
+          if (tx.spam == true){
+            spamWeight += tx.weight;
+          }
+        }
+      }
+      countCb += 1;
     }
 
     // we can expect an honest miner to include 'displaced' transactions in place of recent arrivals and censored txs
@@ -186,11 +207,8 @@ class Audit {
     const numCensored = Object.keys(isCensored).length;
     const numMatches = matches.length - 1; // adjust for coinbase tx
     let score = 0;
-    if (numMatches <= 0 && numCensored <= 0) {
-      score = 1;
-    } else if (numMatches > 0) {
-      score = (numMatches / (numMatches + numCensored));
-    }
+
+    score = (Math.abs((spamWeight/blkWeight)-1));
     const similarity = projectedWeight ? matchedWeight / projectedWeight : 1;
 
     const matchRate = Math.round(score * 100 * 100) / 100;

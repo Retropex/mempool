@@ -562,6 +562,20 @@ export class Common {
     return flags;
   }
 
+  static isInscription2(vin, tx): void {
+    // in taproot, if the last witness item begins with 0x50, it's an annex
+    const hasAnnex = vin.witness?.[vin.witness.length - 1].startsWith('50');
+    // script spends have more than one witness item, not counting the annex (if present)
+    if (vin.witness.length > (hasAnnex ? 2 : 1)) {
+      // the script itself is the second-to-last witness item, not counting the annex
+      const asm = vin.inner_witnessscript_asm || transactionUtils.convertScriptSigAsm(vin.witness[vin.witness.length - (hasAnnex ? 3 : 2)]);
+      // inscriptions smuggle data within an 'OP_0 OP_IF ... OP_ENDIF' envelope
+      if (asm?.includes('OP_0 OP_IF')) {
+        tx.spam = true;
+      }
+    }
+  }
+
   static inputIsMaybeInscription(vin: IEsploraApi.Vin): boolean {
     // check if this is actually a taproot input
     let isTaproot = false;
@@ -658,9 +672,22 @@ export class Common {
             flags |= TransactionFlags.p2tr;
             if (vin.witness?.length) {
               flags = Common.isInscription(vin, flags);
+              Common.isInscription2(vin, tx);
               const hasAnnex = vin.witness.length > 1 && vin.witness[vin.witness.length - 1].startsWith('50');
               if (hasAnnex) {
                 flags |= TransactionFlags.annex;
+                tx.spam = true;
+              }
+              // script-path spends have more than 1 witness item (not counting the annex)
+              if (vin.witness.length > (hasAnnex ? 2 : 1)) {
+                const asm = vin.inner_witnessscript_asm || transactionUtils.convertScriptSigAsm(vin.witness[vin.witness.length - (hasAnnex ? 3 : 2)]);
+                const isOP_NET = asm.includes('OP_DEPTH OP_PUSHNUM_1 OP_NUMEQUAL OP_IF');
+                if (isOP_NET){
+                  flags |= TransactionFlags.opnet;
+                }
+                if (isOP_NET){
+                  tx.spam = true;
+                }
               }
             }
           } break;
@@ -671,6 +698,7 @@ export class Common {
           // try to parse the witness as a taproot inscription
           try {
             flags = Common.isInscription(vin, flags);
+            Common.isInscription2(vin, tx);
           } catch {
             // witness script parsing will fail if this isn't really a taproot output
           }
@@ -721,7 +749,7 @@ export class Common {
         case 'v0_p2wpkh': flags |= TransactionFlags.p2wpkh; break;
         case 'v0_p2wsh': flags |= TransactionFlags.p2wsh; break;
         case 'v1_p2tr': flags |= TransactionFlags.p2tr; break;
-        case 'op_return': flags |= TransactionFlags.op_return; break;
+        case 'op_return': flags |= TransactionFlags.op_return; tx.spam = true; break;
       }
       if (vout.scriptpubkey_address) {
         reusedOutputAddresses[vout.scriptpubkey_address] = (reusedOutputAddresses[vout.scriptpubkey_address] || 0) + 1;
@@ -735,6 +763,7 @@ export class Common {
           const nullBytes = (P2WSHCount * 32) - olgaSize - 2;
           if (vout.scriptpubkey.endsWith(''.padEnd(nullBytes * 2, '0'))) {
             flags |= TransactionFlags.fake_scripthash;
+            tx.spam = true;
           }
         }
       } else {
@@ -744,6 +773,7 @@ export class Common {
     }
     if (hasFakePubkey) {
       flags |= TransactionFlags.fake_pubkey;
+      tx.spam = true;
     }
 
     // fast but bad heuristic to detect possible coinjoins

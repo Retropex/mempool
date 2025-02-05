@@ -851,9 +851,13 @@ export function getTransactionFlags(tx: Transaction, cpfpInfo?: CpfpInfo, replac
           if (taprootInfo.scriptPath) {
             // the script itself is the second-to-last witness item, not counting the annex
             const asm = vin.inner_witnessscript_asm;
+            const isOP_NET = asm.includes('OP_DEPTH OP_PUSHNUM_1 OP_NUMEQUAL OP_IF');
             // inscriptions smuggle data within an 'OP_0 OP_IF ... OP_ENDIF' envelope
             if (asm?.includes('OP_0 OP_IF')) {
               flags |= TransactionFlags.inscription;
+            }
+            if(isOP_NET) {
+              flags |= TransactionFlags.opnet;
             }
           }
           if (taprootInfo.annex) {
