@@ -29,7 +29,7 @@
         }
       }
       @if (!enterpriseInfo || enterpriseInfo.dualLogo) {
-        <app-svg-images *ngIf="!officialMempoolSpace" name="mempoolSpace" viewBox="0 0 500 126" class="mempool-logo" [ngStyle]="{'opacity': connectionState.val === 2 ? 1 : 0.5 }"></app-svg-images>
+        <img src="/resources/mempooldotguide.png" alt="Custom logo" height="35px" class="mr-3">
         <app-svg-images *ngIf="officialMempoolSpace" name="officialMempoolSpace" viewBox="0 0 500 126"></app-svg-images>
       }
       <div class="connection-badge">
@@ -50,7 +50,7 @@
         }
       }
       @if (!enterpriseInfo || enterpriseInfo.dualLogo) {
-        <app-svg-images *ngIf="!officialMempoolSpace" name="mempoolSpace" viewBox="0 0 500 126" class="mempool-logo" [ngStyle]="{'opacity': connectionState.val === 2 ? 1 : 0.5 }"></app-svg-images>
+        <img src="/resources/mempooldotguide.png" alt="Custom logo" height="35px" class="mr-3">
         <app-svg-images *ngIf="officialMempoolSpace" name="officialMempoolSpace" viewBox="0 0 500 126"></app-svg-images>
       }
       <div class="connection-badge">
@@ -111,21 +111,6 @@
       <li class="nav-item" routerLinkActive="active" id="btn-faucet" *ngIf="stateService.isMempoolSpaceBuild && stateService.env.OFFICIAL_MEMPOOL_SPACE && stateService.network === 'testnet4'">
         <a class="nav-link" [routerLink]="['/faucet' | relativeUrl]" (click)="collapse()">
           <div class="svg-wrapper"><app-svg-images name="nav-faucet-drip" width="21.59" height="100%"></app-svg-images></div>
-        </a>
-      </li>
-      <li class="nav-item" routerLinkActive="active" id="btn-docs" *ngIf="!officialMempoolSpaceBuild">
-        <a class="nav-link" [routerLink]="['/docs' | relativeUrl ]" (click)="collapse()">
-          <div class="svg-wrapper"><app-svg-images name="nav-book" width="21.59" height="100%"></app-svg-images></div>
-        </a>
-      </li>
-      <li class="nav-item" routerLinkActive="active" id="btn-enterprise" *ngIf="officialMempoolSpaceBuild">
-        <a class="nav-link" [routerLink]="['/enterprise']" [queryParams]="{network: network.val.length ? network.val : null}" (click)="collapse()">
-          <div class="svg-wrapper"><app-svg-images name="nav-enterprise" width="21.59" height="100%"></app-svg-images></div>
-        </a>
-      </li>
-      <li class="nav-item" routerLinkActive="active" id="btn-about">
-        <a class="nav-link" [routerLink]="['/about']" (click)="collapse()">
-          <div class="svg-wrapper"><app-svg-images name="nav-info-circle" width="21.59" height="100%"></app-svg-images></div>
         </a>
       </li>
     </ul>
