@@ -140,6 +140,7 @@ export interface TransactionExtended extends IEsploraApi.Transaction {
   flags?: number;
   clusterId?: number;
   chunkIndex?: number;
+  spam?: boolean;
 }
 
 export interface MempoolTransactionExtended extends TransactionExtended {
@@ -284,6 +285,7 @@ export const TransactionFlags = {
   inscription:                      0b00000100_00000000_00000000_00000000n,
   fake_scripthash:                  0b00001000_00000000_00000000_00000000n,
   annex:                            0b00010000_00000000_00000000_00000000n,
+  opnet:                            0b00100000_00000000_00000000_00000000n,
   // heuristics
   coinjoin:                0b00000001_00000000_00000000_00000000_00000000n,
   consolidation:           0b00000010_00000000_00000000_00000000_00000000n,
