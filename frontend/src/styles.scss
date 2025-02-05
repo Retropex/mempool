@@ -1,8 +1,8 @@
 @use "sass:color";
 
 /* Theme */
-$bg: #11131f;
-$active-bg: #000000;
+$bg: #1d1f31;
+$active-bg: #11131f;
 $hover-bg: #12131e;
 $fg: #fff;
 $nav-bg: $bg;
@@ -20,11 +20,11 @@ $gray-700: $fg;
 
 $nav-tabs-link-active-bg: $active-bg;
 
-$primary: #007cfa;
-$secondary: #272f4e;
-$tertiary: #6225b2;
-$success: #0aab2f;
-$info: #00ddff;
+$primary: #116ef5;
+$secondary: #2d3348;
+$tertiary: #116ef5;
+$success: #1a9436;
+$info: #1bd8f4;
 
 $h5-font-size: 1.15rem !default;
 
@@ -112,8 +112,8 @@ $dropdown-link-active-bg: $active-bg;
   --skeleton-bg: #2e324e;
   --skeleton-bg-light: #5d6182;
 
-  --box-bg: #171c2a;
-  --stat-box-bg: #0b1018;
+  --box-bg: #24273e;
+  --stat-box-bg: #181b2d;
   --border-subtle: rgba(255, 255, 255, 0.11);
   --block-top: #232838;
   --block-side: #191c27;
@@ -137,7 +137,7 @@ $dropdown-link-active-bg: $active-bg;
   --liquid: #116761;
   --liquidtestnet: #494a4a;
 
-  --mainnet-alt: #9339f4;
+  --mainnet-alt: #22bcd8;
   --testnet-alt: #183550;
   --signet-alt: #471850;
   --regtest-alt: #4a4a4a;
