@@ -5,7 +5,8 @@ services:
     environment:
       FRONTEND_HTTP_PORT: "8080"
       BACKEND_MAINNET_HTTP_HOST: "api"
-    image: mempool/frontend:latest
+      AUDIT: "true"
+    image: ghcr.io/retropex/mempoolfrontend:v3.2.0
     user: "1000:1000"
     restart: on-failure
     stop_grace_period: 1m
@@ -31,7 +32,10 @@ services:
       DATABASE_USERNAME: "mempool"
       DATABASE_PASSWORD: "mempool"
       STATISTICS_ENABLED: "true"
-    image: mempool/backend:latest
+      MEMPOOL_BLOCKS_SUMMARIES_INDEXING: "true"
+      MEMPOOL_GOGGLES_INDEXING: "true"
+      MEMPOOL_AUDIT: "true"
+    image: ghcr.io/retropex/mempoolbackend:v3.2.0
     user: "1000:1000"
     restart: on-failure
     stop_grace_period: 1m
