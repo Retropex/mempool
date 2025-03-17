@@ -29,6 +29,7 @@ class Audit {
     let matchedWeight = 0;
     let projectedWeight = 0;
 
+    let countCb = 0;
     let spamWeight = 0;
     let blkWeight = 0;
 
@@ -82,11 +83,14 @@ class Audit {
     }
 
     for (const tx of transactions){
-      if(tx.spam !== undefined){
-        if (tx.spam == true){
-          spamWeight += tx.weight;
+      if (countCb !== 0){
+        if(tx.spam !== undefined){
+          if (tx.spam == true){
+            spamWeight += tx.weight;
+          }
         }
       }
+      countCb += 1;
     }
 
     // we can expect an honest miner to include 'displaced' transactions in place of recent arrivals and censored txs
