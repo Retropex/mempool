@@ -739,6 +739,13 @@ export class Common {
     );
   }
 
+  static auditIndexingEnabled(): boolean {
+    return (
+      Common.indexingEnabled() &&
+      config.MEMPOOL.AUDIT === true
+    );
+  }
+
   static gogglesIndexingEnabled(): boolean {
     return (
       Common.blocksSummariesIndexingEnabled() &&
