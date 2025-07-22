@@ -26,7 +26,7 @@
         }
       }
       @if (!enterpriseInfo || enterpriseInfo.dualLogo) {
-        <app-svg-images *ngIf="!officialMempoolSpace" name="mempoolSpace" viewBox="0 0 500 126" class="mempool-logo" [ngStyle]="{'opacity': connectionState.val === 2 ? 1 : 0.5 }"></app-svg-images>
+        <img src="/resources/mempooldotguide.png" alt="Custom logo" height="35px" class="mr-3">
         <app-svg-images *ngIf="officialMempoolSpace" name="officialMempoolSpace" viewBox="0 0 500 126"></app-svg-images>
       }
       <div class="connection-badge">
@@ -47,7 +47,7 @@
         }
       }
       @if (!enterpriseInfo || enterpriseInfo.dualLogo) {
-        <app-svg-images *ngIf="!officialMempoolSpace" name="mempoolSpace" viewBox="0 0 500 126" class="mempool-logo" [ngStyle]="{'opacity': connectionState.val === 2 ? 1 : 0.5 }"></app-svg-images>
+        <img src="/resources/mempooldotguide.png" alt="Custom logo" height="35px" class="mr-3">
         <app-svg-images *ngIf="officialMempoolSpace" name="officialMempoolSpace" viewBox="0 0 500 126"></app-svg-images>
       }
       <div class="connection-badge">
