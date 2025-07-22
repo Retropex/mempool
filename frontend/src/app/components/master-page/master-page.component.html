@@ -26,6 +26,7 @@
           </div>
           <div class="vertical-line"></div>
         </ng-template>
+        <img src="/resources/mempooldotguide.png" alt="Custom logo" height="35px" class="mr-3">
         <app-svg-images *ngIf="officialMempoolSpace" name="officialMempoolSpace" viewBox="0 0 500 126"></app-svg-images>
       }
       <div class="connection-badge">
@@ -49,6 +50,7 @@
         @if (enterpriseInfo?.header_img) {
           <img [src]="enterpriseInfo?.header_img" [alt]="enterpriseInfo.title" height="36px">
         } @else {
+          <img src="/resources/mempooldotguide.png" alt="Custom logo" height="35px" class="mr-3">
           <app-svg-images *ngIf="officialMempoolSpace" name="officialMempoolSpace" viewBox="0 0 500 126"></app-svg-images>
         }
           <div class="connection-badge">
