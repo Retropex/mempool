@@ -1,0 +1,97 @@
+<div [class]="widget === false ? 'full-container' : ''">
+
+  <div *ngIf="widget">
+    <div class="knots-distribution" *ngIf="(knotsNodesObservable$ | async) as knotsStats; else loadingKnots">
+      <div class="item">
+        <h5 class="card-title d-inline-block" i18n="knots.total-nodes">Total Knots Nodes</h5>
+        <p class="card-text">
+          {{ getTotalKnotsNodes(knotsStats) }}
+        </p>
+      </div>
+      <div class="item">
+        <h5 class="card-title d-inline-block" i18n="knots.countries-count">Countries</h5>
+        <p class="card-text">
+          {{ knotsStats.length }}
+        </p>
+      </div>
+      <div class="item">
+        <h5 class="card-title d-inline-block" i18n="knots.top-country">Top Country</h5>
+        <p class="card-text">
+          {{ knotsStats[0]?.country || '-' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-header" *ngIf="!widget">
+    <div class="d-flex d-md-table-cell align-items-baseline">
+      <span i18n="knots.nodes-distribution">Bitcoin Knots Nodes Distribution</span>
+      <button class="btn p-0 pl-2" style="margin: 0 0 4px 0px" (click)="onSaveChart()">
+        <fa-icon [icon]="['fas', 'download']" [fixedWidth]="true"></fa-icon>
+      </button>
+    </div>
+  </div>
+
+  <div [class]="!widget ? '' : 'pb-0'" class="container pb-lg-0">
+    <div [class]="widget ? 'chart-widget' : 'chart'" *browserOnly 
+         [style]="{ height: widget ? (height + 'px') : null, opacity: isLoading ? 0.5 : 1 }" 
+         echarts 
+         [initOpts]="chartInitOptions" 
+         [options]="chartOptions"
+         (chartInit)="onChartInit($event)">
+    </div>
+
+    <div class="text-center loadingGraphs" *ngIf="isLoading">
+      <div class="spinner-border text-light"></div>
+    </div>
+
+    <table *ngIf="widget === false" class="table table-borderless text-center knots-table" 
+           [style]="{opacity: isLoading ? 0.5 : 1}">
+      <thead>
+        <tr>
+          <th class="d-none d-md-table-cell" i18n="knots.rank">Rank</th>
+          <th class="" i18n="knots.country">Country</th>
+          <th class="" i18n="knots.nodes-count">Nodes</th>
+          <th class="" i18n="knots.percentage">Percentage</th>
+        </tr>
+      </thead>
+      <tbody [attr.data-cy]="'knots-table'" *ngIf="(knotsNodesObservable$ | async) as knotsStats">
+        <tr *ngFor="let country of knotsStats; let i = index">
+          <td class="d-none d-md-table-cell">{{ i + 1 }}</td>
+          <td class="country-name">{{ country.country }}</td>
+          <td class="">{{ country.count }}</td>
+          <td class="">{{ country.percentage | number: '1.1-1' }}%</td>
+        </tr>
+        <tr style="border-top: 1px solid #555">
+          <td class="d-none d-md-table-cell"></td>
+          <td class=""><b i18n="knots.all-countries">All Countries</b></td>
+          <td class=""><b>{{ getTotalKnotsNodes(knotsStats) }}</b></td>
+          <td class=""><b>100.0%</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<ng-template #loadingKnots>
+  <div class="knots-distribution">
+    <div class="item">
+      <h5 class="card-title" i18n="knots.total-nodes">Total Knots Nodes</h5>
+      <p class="card-text">
+        <span class="skeleton-loader skeleton-loader-big"></span>
+      </p>
+    </div>
+    <div class="item">
+      <h5 class="card-title" i18n="knots.countries-count">Countries</h5>
+      <p class="card-text">
+        <span class="skeleton-loader skeleton-loader-big"></span>
+      </p>
+    </div>
+    <div class="item">
+      <h5 class="card-title" i18n="knots.top-country">Top Country</h5>
+      <p class="card-text">
+        <span class="skeleton-loader skeleton-loader-big"></span>
+      </p>
+    </div>
+  </div>
+</ng-template>

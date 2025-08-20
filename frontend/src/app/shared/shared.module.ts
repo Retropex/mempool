@@ -10,6 +10,7 @@ import { faFilter, faAngleDown, faAngleUp, faAngleRight, faAngleLeft, faBolt, fa
   faCircleXmark, faCalendarCheck, faMoneyBillTrendUp, faRobot, faShareNodes, faCreditCard, faMicroscope, faExclamationTriangle, faLockOpen, faPaperclip, faAddressCard,
   faMedal, faBug, faFilePdf, faPiggyBank, faLayerGroup, faHeart, faCashRegister } from '@fortawesome/free-solid-svg-icons';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { MenuComponent } from '@components/menu/menu.component';
 import { PreviewTitleComponent } from '@components/master-page-preview/preview-title.component';
 import { VbytesPipe } from '@app/shared/pipes/bytes-pipe/vbytes.pipe';
@@ -131,6 +132,8 @@ import { BitcoinInvoiceComponent } from '@components/bitcoin-invoice/bitcoin-inv
 
 import { OnlyVsizeDirective, OnlyWeightDirective } from '@app/shared/components/weight-directives/weight-directives';
 import { GithubLogin } from '@components/github-login.component/github-login.component';
+import { KnotsNodesChartComponent } from '../components/knots-nodes-chart/knots-nodes-chart.component';
+import { OceanHashrateChartComponent } from '../components/ocean-hashrate-chart/ocean-hashrate-chart.component';
 
 @NgModule({
   declarations: [
@@ -254,6 +257,8 @@ import { GithubLogin } from '@components/github-login.component/github-login.com
     TwitterLogin,
     GithubLogin,
     BitcoinInvoiceComponent,
+    KnotsNodesChartComponent,
+    OceanHashrateChartComponent,
   ],
   imports: [
     CommonModule,
@@ -267,6 +272,7 @@ import { GithubLogin } from '@components/github-login.component/github-login.com
     NgbCollapseModule,
     InfiniteScrollModule,
     FontAwesomeModule,
+    NgxEchartsModule,
   ],
   providers: [
     BytesPipe,
@@ -290,6 +296,7 @@ import { GithubLogin } from '@components/github-login.component/github-login.com
     NgbCollapseModule,
     InfiniteScrollModule,
     FontAwesomeModule,
+    NgxEchartsModule,
     TimeComponent,
     ClipboardComponent,
     QrcodeComponent,
@@ -401,6 +408,8 @@ import { GithubLogin } from '@components/github-login.component/github-login.com
 
     OnlyVsizeDirective,
     OnlyWeightDirective,
+    KnotsNodesChartComponent,
+    OceanHashrateChartComponent,
   ]
 })
 export class SharedModule {

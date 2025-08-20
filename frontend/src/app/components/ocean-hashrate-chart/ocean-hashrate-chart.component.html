@@ -1,0 +1,97 @@
+<div [class]="widget === false ? 'full-container' : ''">
+
+  <div *ngIf="widget">
+    <div class="ocean-distribution" *ngIf="(oceanHashrateObservable$ | async) as oceanData; else loadingOcean">
+      <div class="item">
+        <h5 class="card-title d-inline-block" i18n="ocean.snapshot-date">Snapshot Date</h5>
+        <p class="card-text">
+          {{ getFormattedDate(oceanData.timestamp) }}
+        </p>
+      </div>
+      <div class="item">
+        <h5 class="card-title d-inline-block" i18n="ocean.top-template">Top Template</h5>
+        <p class="card-text">
+          {{ oceanData.templates[0]?.template || '-' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-header" *ngIf="!widget">
+    <div class="d-flex d-md-table-cell align-items-baseline">
+      <span i18n="ocean.hashrate-distribution">Ocean Mining Hashrate Distribution</span>
+      <button class="btn p-0 pl-2" style="margin: 0 0 4px 0px" (click)="onSaveChart()">
+        <fa-icon [icon]="['fas', 'download']" [fixedWidth]="true"></fa-icon>
+      </button>
+    </div>
+  </div>
+
+  <div [class]="!widget ? '' : 'pb-0'" class="container pb-lg-0">
+    <div [class]="widget ? 'chart-widget' : 'chart'" 
+         [style]="{ height: widget ? (height + 'px') : null, opacity: isLoading ? 0.5 : 1 }" 
+         echarts 
+         [initOpts]="chartInitOptions" 
+         [options]="chartOptions"
+         (chartInit)="onChartInit($event)">
+    </div>
+
+    <div class="text-center loadingGraphs" *ngIf="isLoading">
+      <div class="spinner-border text-light"></div>
+    </div>
+
+    <table *ngIf="widget === false" class="table table-borderless text-center ocean-table" 
+           [style]="{opacity: isLoading ? 0.5 : 1}">
+      <thead>
+        <tr>
+          <th class="d-none d-md-table-cell" i18n="ocean.rank">Rank</th>
+          <th class="" i18n="ocean.template">Template</th>
+          <th class="" i18n="ocean.shares-count">Shares</th>
+          <th class="" i18n="ocean.percentage">Percentage</th>
+        </tr>
+      </thead>
+      <tbody [attr.data-cy]="'ocean-table'" *ngIf="(oceanHashrateObservable$ | async) as oceanData">
+        <tr *ngFor="let template of oceanData.templates; let i = index">
+          <td class="d-none d-md-table-cell">{{ i + 1 }}</td>
+          <td class="template-name">{{ template.template }}</td>
+          <td class="">{{ template.shares | number }}</td>
+          <td class="">{{ template.percentage | number: '1.1-1' }}%</td>
+        </tr>
+        <tr style="border-top: 1px solid #555">
+          <td class="d-none d-md-table-cell"></td>
+          <td class=""><b i18n="ocean.all-templates">All Templates</b></td>
+          <td class=""><b>{{ getTotalShares(oceanData) | number }}</b></td>
+          <td class=""><b>100.0%</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #loadingOcean>
+    <div class="ocean-distribution">
+      <div class="item">
+        <h5 class="card-title d-inline-block">
+          <div class="skeleton-loader skeleton-loader-text"></div>
+        </h5>
+        <div class="card-text">
+          <div class="skeleton-loader skeleton-loader-text"></div>
+        </div>
+      </div>
+      <div class="item">
+        <h5 class="card-title d-inline-block">
+          <div class="skeleton-loader skeleton-loader-text"></div>
+        </h5>
+        <div class="card-text">
+          <div class="skeleton-loader skeleton-loader-text"></div>
+        </div>
+      </div>
+      <div class="item">
+        <h5 class="card-title d-inline-block">
+          <div class="skeleton-loader skeleton-loader-text"></div>
+        </h5>
+        <div class="card-text">
+          <div class="skeleton-loader skeleton-loader-text"></div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>

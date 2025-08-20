@@ -59,6 +59,26 @@
       </div>
     </div>
     <div class="col" style="max-height: 410px">
+      <div class="card">
+        <div class="card-body pl-2 pr-2">
+          <h5 class="card-title" i18n="ocean.hashrate-distribution">Ocean Mining Hashrate</h5>
+          <div class="mempool-graph">
+            <app-ocean-hashrate-chart [height]="300" [attr.data-cy]="'ocean-hashrate'" [widget]=true></app-ocean-hashrate-chart>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="max-height: 410px">
+      <div class="card">
+        <div class="card-body pl-2 pr-2">
+          <h5 class="card-title" i18n="knots.nodes-distribution">Bitcoin Knots Nodes</h5>
+          <div class="mempool-graph">
+            <app-knots-nodes-chart [height]="300" [attr.data-cy]="'knots-distribution'" [widget]=true></app-knots-nodes-chart>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="max-height: 410px">
       <div class="card" *ngIf="(network$ | async) !== 'liquidtestnet'; else latestBlocks">
         <div class="card-body">
           <a class="title-link" href="" [routerLink]="['/rbf' | relativeUrl]">

@@ -29,6 +29,18 @@ const ADDRESS_REGEX = /^[a-z0-9]{2,120}$/i;
 const SCRIPT_HASH_REGEX = /^([a-f0-9]{2})+$/i;
 
 class BitcoinRoutes {
+  private bitnodesCache: {
+    data: any;
+    lastUpdated: number;
+  } | null = null;
+  private readonly BITNODES_CACHE_DURATION = 120 * 60 * 1000;
+
+  private oceanCache: {
+    data: any;
+    lastUpdated: number;
+  } | null = null;
+  private readonly OCEAN_CACHE_DURATION = 60 * 60 * 1000;
+
   public initRoutes(app: Application) {
     app
       .get(config.MEMPOOL.API_URL_PREFIX + 'transaction-times', this.getTransactionTimes)
@@ -39,6 +51,8 @@ class BitcoinRoutes {
       .get(config.MEMPOOL.API_URL_PREFIX + 'backend-info', this.getBackendInfo)
       .get(config.MEMPOOL.API_URL_PREFIX + 'init-data', this.getInitData)
       .get(config.MEMPOOL.API_URL_PREFIX + 'validate-address/:address', this.validateAddress)
+      .get(config.MEMPOOL.API_URL_PREFIX + 'bitnodes/knots-stats', this.getBitnodesKnotsStats.bind(this))
+      .get(config.MEMPOOL.API_URL_PREFIX + 'ocean/hashrate-stats', this.getOceanHashrateStats.bind(this))
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/rbf', this.getRbfHistory)
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/cached', this.getCachedTx)
       .get(config.MEMPOOL.API_URL_PREFIX + 'replacements', this.getRbfReplacements)
@@ -222,6 +236,157 @@ class BitcoinRoutes {
 
   private getBackendInfo(req: Request, res: Response) {
     res.json(backendInfo.getBackendInfo());
+  }
+
+  private async getBitnodesKnotsStats(req: Request, res: Response) {
+    try {
+      // Check if we have cached data that's still valid
+      const now = Date.now();
+      if (this.bitnodesCache && 
+          this.bitnodesCache.lastUpdated && 
+          (now - this.bitnodesCache.lastUpdated) < this.BITNODES_CACHE_DURATION) {
+        logger.debug('Serving Bitcoin Knots nodes stats from cache');
+        res.json(this.bitnodesCache.data);
+        return;
+      }
+
+      logger.debug('Fetching fresh Bitcoin Knots nodes stats from Bitnodes API');
+      const response = await axios.get('https://bitnodes.io/api/v1/snapshots/latest', {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mempool.space/1.0'
+        }
+      });
+
+      const snapshot = response.data;
+      const countryCount: { [country: string]: number } = {};
+      let totalKnotsNodes = 0;
+
+      // Process each node
+      Object.values(snapshot.nodes).forEach((nodeData: any) => {
+        const userAgent = nodeData[1];
+        const country = nodeData[7]; // country code
+        const networkType = nodeData[11]; // AS/network type
+
+        // Check if it's a Knots node and not a Tor node
+        if (userAgent && userAgent.toLowerCase().includes('knots') && networkType !== 'TOR') {
+          if (country) {
+            countryCount[country] = (countryCount[country] || 0) + 1;
+            totalKnotsNodes++;
+          }
+        }
+      });
+
+      // Convert to array and calculate percentages
+      const result = Object.entries(countryCount)
+        .map(([country, count]) => ({
+          country,
+          count,
+          percentage: totalKnotsNodes > 0 ? (count / totalKnotsNodes) * 100 : 0
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      // Update cache
+      this.bitnodesCache = {
+        data: result,
+        lastUpdated: now
+      };
+
+      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodes} nodes across ${result.length} countries`);
+      res.json(result);
+    } catch (error) {
+      logger.err(`Error fetching Bitnodes data: ${error}`);
+      
+      // If we have cached data (even if expired), serve it as fallback
+      if (this.bitnodesCache && this.bitnodesCache.data) {
+        logger.warn('Serving expired cached data due to API error');
+        res.json(this.bitnodesCache.data);
+        return;
+      }
+      
+      handleError(req, res, 500, 'Failed to fetch Bitcoin Knots nodes statistics');
+    }
+  }
+
+  private async getOceanHashrateStats(req: Request, res: Response) {
+    try {
+      // Check if we have cached data that's still valid
+      const now = Date.now();
+      if (this.oceanCache && 
+          this.oceanCache.lastUpdated && 
+          (now - this.oceanCache.lastUpdated) < this.OCEAN_CACHE_DURATION) {
+        logger.debug('Serving Ocean hashrate stats from cache');
+        res.json(this.oceanCache.data);
+        return;
+      }
+
+      logger.debug('Fetching fresh Ocean hashrate stats from API');
+      const response = await axios.get('https://api.ocean.xyz/v1/multitemplate_stats', {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mempool.space/1.0'
+        }
+      });
+
+      const oceanData = response.data;
+      if (!oceanData || !oceanData.result || !Array.isArray(oceanData.result.share_tags)) {
+        throw new Error('Invalid Ocean API response format');
+      }
+
+      const shareTags = oceanData.result.share_tags;
+      const snapTs = oceanData.result.snap_ts;
+      
+      // Calculate total hashrate
+      const totalShares = shareTags.reduce((sum: number, shares: number) => sum + shares, 0);
+      
+      // Define the template names based on the API documentation
+      const templateNames = [
+        'Ocean',
+        'Datum', 
+        'Core',
+        'OrdiRespector',
+        'Data-Free',
+        'Unknown 1',
+        'Unknown 2', 
+        'Unknown 3'
+      ];
+
+      // Create the result array with percentages
+      const result = shareTags.map((shares: number, index: number) => ({
+        template: templateNames[index] || `Template ${index}`,
+        shares: shares,
+        percentage: totalShares > 0 ? (shares / totalShares) * 100 : 0
+      }))
+      .filter(item => item.shares > 0) // Only include templates with shares
+      .sort((a, b) => b.shares - a.shares); // Sort by shares descending
+
+      const processedData = {
+        templates: result,
+        totalShares: totalShares,
+        timestamp: snapTs,
+        lastUpdated: now
+      };
+
+      // Update cache
+      this.oceanCache = {
+        data: processedData,
+        lastUpdated: now
+      };
+
+      logger.debug(`Cached Ocean hashrate stats: ${totalShares} total shares across ${result.length} active templates`);
+      res.json(processedData);
+    } catch (error) {
+      logger.err(`Error fetching Ocean data: ${error}`);
+      
+      // If we have cached data (even if expired), serve it as fallback
+      if (this.oceanCache && this.oceanCache.data) {
+        logger.warn('Serving expired Ocean cached data due to API error');
+        res.json(this.oceanCache.data);
+        return;
+      }
+      
+      handleError(req, res, 500, 'Failed to fetch Ocean hashrate statistics');
+    }
   }
 
   private async getTransaction(req: Request, res: Response) {
