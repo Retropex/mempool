@@ -60,6 +60,52 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Knots Progress + Ocean and Knots Section-->
+  <div *ngIf="stateService.network === ''">
+    <div class="col knots-progress-fullwidth-container">
+      <div class="knots-progress-wrapper">
+        <div class="progress-header">
+          <h6 class="progress-title" i18n="knots.network-distribution">Bitcoin Knots Network Distribution</h6>
+          <span class="progress-percentage">{{ knotsPercentage?.toFixed(2) || '0.00' }}%</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bg">
+            <div class="progress-fill" [style.width.%]="knotsPercentage || 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Ocean and Knots Cards Grid -->
+    <div class="row row-cols-1 row-cols-md-2">
+      <!-- Ocean Mining Hashrate -->
+      <div class="col" style="max-height: 410px">
+        <div class="card">
+          <div class="card-body pl-2 pr-2">
+            <h5 class="card-title" i18n="ocean.hashrate-distribution">Ocean Mining Hashrate</h5>
+            <div class="mempool-graph">
+              <app-ocean-hashrate-chart [height]="300" [attr.data-cy]="'ocean-hashrate'" [widget]=true></app-ocean-hashrate-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Bitcoin Knots Nodes -->
+      <div class="col" style="max-height: 410px">
+        <div class="card">
+          <div class="card-body pl-2 pr-2">
+            <h5 class="card-title" i18n="knots.nodes-distribution">Bitcoin Knots Nodes</h5>
+            <div class="mempool-graph">
+              <app-knots-nodes-chart [height]="300" [attr.data-cy]="'knots-nodes'" [widget]=true></app-knots-nodes-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2">
     <div class="col" style="max-height: 410px">
       <div class="card" *ngIf="(network$ | async) !== 'liquidtestnet'; else latestBlocks">
         <div class="card-body">

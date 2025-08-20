@@ -1,0 +1,100 @@
+.ocean-distribution {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  .item {
+    text-align: center;
+    flex: 1;
+
+    .card-title {
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+
+    .card-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0;
+      color: var(--primary);
+    }
+  }
+}
+
+.ocean-table {
+  .template-name {
+    font-weight: 500;
+    color: var(--primary);
+  }
+}
+
+.full-container {
+  padding: 1rem;
+}
+
+.chart-widget {
+  min-height: 200px;
+  width: 100%;
+  overflow: hidden;
+  @media (max-width: 767px) {
+    max-height: 240px;
+  }
+  @media (max-width: 485px) {
+    max-height: 200px;
+  }
+}
+
+.chart {
+  min-height: 400px;
+}
+
+.skeleton-loader-text {
+  height: 1rem;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .ocean-distribution {
+    /* Keep flex-direction: row to maintain side-by-side layout */
+    
+    .item {
+      margin-bottom: 0.5rem;
+      
+      .card-title {
+        font-size: 0.75rem; /* Smaller title on mobile */
+      }
+      
+      .card-text {
+        font-size: 1rem; /* Smaller text on mobile */
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .ocean-distribution {
+    .item {
+      .card-title {
+        font-size: 0.7rem; /* Even smaller on very small screens */
+        margin-bottom: 0.125rem;
+      }
+      
+      .card-text {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
