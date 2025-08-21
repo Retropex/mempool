@@ -264,6 +264,7 @@ class BitcoinRoutes {
       });
 
       const snapshot = response.data;
+      const totalBitcoinNodes = snapshot.total_nodes; // Total number of Bitcoin nodes
       const countryCount: { [country: string]: number } = {};
       let totalKnotsNodesClearnet = 0;
       let torNodeCount = 0;
@@ -289,6 +290,9 @@ class BitcoinRoutes {
       
       fullCount = torNodeCount + totalKnotsNodesClearnet;
       
+      // Calculate percentage of Knots nodes against all Bitcoin nodes
+      const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (fullCount / totalBitcoinNodes) * 100 : 0;
+      
       // Convert to array and calculate percentages
       const countryStats = Object.entries(countryCount)
         .map(([country, count]) => ({
@@ -304,7 +308,9 @@ class BitcoinRoutes {
         totals: {
           totalNodes: fullCount,
           clearnetNodes: totalKnotsNodesClearnet,
-          torNodes: torNodeCount
+          torNodes: torNodeCount,
+          totalBitcoinNodes: totalBitcoinNodes,
+          percentageOfTotal: knotsPercentageOfTotal
         }
       };
 
@@ -314,7 +320,7 @@ class BitcoinRoutes {
         lastUpdated: now
       };
 
-      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodesClearnet} clearnet nodes, ${torNodeCount} Tor nodes, ${fullCount} total nodes across ${countryStats.length} countries`);
+      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodesClearnet} clearnet nodes, ${torNodeCount} Tor nodes, ${fullCount} total nodes (${knotsPercentageOfTotal.toFixed(2)}% of ${totalBitcoinNodes} total Bitcoin nodes) across ${countryStats.length} countries`);
       res.json(result);
     } catch (error) {
       logger.err(`Error fetching Bitnodes data: ${error}`);
