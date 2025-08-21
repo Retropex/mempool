@@ -1,23 +1,23 @@
 <div [class]="widget === false ? 'full-container' : ''">
 
   <div *ngIf="widget">
-    <div class="knots-distribution" *ngIf="(knotsNodesObservable$ | async) as knotsStats; else loadingKnots">
+    <div class="knots-distribution" *ngIf="(knotsNodesObservable$ | async) as knotsData; else loadingKnots">
       <div class="item">
         <h5 class="card-title d-inline-block" i18n="knots.total-nodes">Total Knots Nodes</h5>
         <p class="card-text">
-          {{ getTotalKnotsNodes(knotsStats) }}
+          {{ getTotalKnotsNodes(knotsData) }}
         </p>
       </div>
       <div class="item">
-        <h5 class="card-title d-inline-block" i18n="knots.countries-count">Countries</h5>
+        <h5 class="card-title d-inline-block" i18n="knots.clearnet-nodes">Clearnet Nodes</h5>
         <p class="card-text">
-          {{ knotsStats.length }}
+          {{ getClearnetNodes(knotsData) }}
         </p>
       </div>
       <div class="item">
-        <h5 class="card-title d-inline-block" i18n="knots.top-country">Top Country</h5>
+        <h5 class="card-title d-inline-block" i18n="knots.tor-nodes">Tor Nodes</h5>
         <p class="card-text">
-          {{ knotsStats[0]?.country || '-' }}
+          {{ getTorNodes(knotsData) }}
         </p>
       </div>
     </div>
@@ -55,8 +55,8 @@
           <th class="" i18n="knots.percentage">Percentage</th>
         </tr>
       </thead>
-      <tbody [attr.data-cy]="'knots-table'" *ngIf="(knotsNodesObservable$ | async) as knotsStats">
-        <tr *ngFor="let country of knotsStats; let i = index">
+      <tbody [attr.data-cy]="'knots-table'" *ngIf="(knotsNodesObservable$ | async) as knotsData">
+        <tr *ngFor="let country of knotsData.countries; let i = index">
           <td class="d-none d-md-table-cell">{{ i + 1 }}</td>
           <td class="country-name">{{ country.country }}</td>
           <td class="">{{ country.count }}</td>
@@ -65,7 +65,7 @@
         <tr style="border-top: 1px solid #555">
           <td class="d-none d-md-table-cell"></td>
           <td class=""><b i18n="knots.all-countries">All Countries</b></td>
-          <td class=""><b>{{ getTotalKnotsNodes(knotsStats) }}</b></td>
+          <td class=""><b>{{ getTotalKnotsNodes(knotsData) }}</b></td>
           <td class=""><b>100.0%</b></td>
         </tr>
       </tbody>
@@ -82,13 +82,13 @@
       </p>
     </div>
     <div class="item">
-      <h5 class="card-title" i18n="knots.countries-count">Countries</h5>
+      <h5 class="card-title" i18n="knots.clearnet-nodes">Clearnet Nodes</h5>
       <p class="card-text">
         <span class="skeleton-loader skeleton-loader-big"></span>
       </p>
     </div>
     <div class="item">
-      <h5 class="card-title" i18n="knots.top-country">Top Country</h5>
+      <h5 class="card-title" i18n="knots.tor-nodes">Tor Nodes</h5>
       <p class="card-text">
         <span class="skeleton-loader skeleton-loader-big"></span>
       </p>
