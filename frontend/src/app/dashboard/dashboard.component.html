@@ -58,7 +58,7 @@
         </div>
       </div>
     </div>
-    <div class="col" style="max-height: 410px">
+    <div class="col" style="max-height: 410px" *ngIf="stateService.network === ''">
       <div class="card">
         <div class="card-body pl-2 pr-2">
           <h5 class="card-title" i18n="ocean.hashrate-distribution">Ocean Mining Hashrate</h5>
@@ -68,7 +68,7 @@
         </div>
       </div>
     </div>
-    <div class="col" style="max-height: 410px">
+    <div class="col" style="max-height: 410px" *ngIf="stateService.network === ''">
       <div class="card">
         <div class="card-body pl-2 pr-2">
           <h5 class="card-title" i18n="knots.nodes-distribution">Bitcoin Knots Nodes</h5>
