@@ -265,7 +265,9 @@ class BitcoinRoutes {
 
       const snapshot = response.data;
       const countryCount: { [country: string]: number } = {};
-      let totalKnotsNodes = 0;
+      let totalKnotsNodesClearnet = 0;
+      let torNodeCount = 0;
+      let fullCount = 0;
 
       // Process each node
       Object.values(snapshot.nodes).forEach((nodeData: any) => {
@@ -274,22 +276,37 @@ class BitcoinRoutes {
         const networkType = nodeData[11]; // AS/network type
 
         // Check if it's a Knots node and not a Tor node
-        if (userAgent && userAgent.toLowerCase().includes('knots') && networkType !== 'TOR') {
-          if (country) {
+        if (userAgent && userAgent.toLowerCase().includes('knots')) {
+          if ( networkType === 'TOR') {
+            torNodeCount++;
+          }
+          if (country && networkType !== 'TOR') {
             countryCount[country] = (countryCount[country] || 0) + 1;
-            totalKnotsNodes++;
+            totalKnotsNodesClearnet++;
           }
         }
       });
-
+      
+      fullCount = torNodeCount + totalKnotsNodesClearnet;
+      
       // Convert to array and calculate percentages
-      const result = Object.entries(countryCount)
+      const countryStats = Object.entries(countryCount)
         .map(([country, count]) => ({
           country,
           count,
-          percentage: totalKnotsNodes > 0 ? (count / totalKnotsNodes) * 100 : 0
+          percentage: totalKnotsNodesClearnet > 0 ? (count / totalKnotsNodesClearnet) * 100 : 0
         }))
         .sort((a, b) => b.count - a.count);
+
+      // Create complete result with totals
+      const result = {
+        countries: countryStats,
+        totals: {
+          totalNodes: fullCount,
+          clearnetNodes: totalKnotsNodesClearnet,
+          torNodes: torNodeCount
+        }
+      };
 
       // Update cache
       this.bitnodesCache = {
@@ -297,7 +314,7 @@ class BitcoinRoutes {
         lastUpdated: now
       };
 
-      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodes} nodes across ${result.length} countries`);
+      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodesClearnet} clearnet nodes, ${torNodeCount} Tor nodes, ${fullCount} total nodes across ${countryStats.length} countries`);
       res.json(result);
     } catch (error) {
       logger.err(`Error fetching Bitnodes data: ${error}`);
