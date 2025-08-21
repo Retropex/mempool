@@ -255,4 +255,12 @@ export class KnotsNodesChartComponent implements OnInit {
   getTorNodes(knotsData: KnotsNodeResponse): number {
     return knotsData.totals.torNodes;
   }
+
+  getTotalBitcoinNodes(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.totalBitcoinNodes;
+  }
+
+  getKnotsPercentageOfTotal(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.percentageOfTotal;
+  }
 }

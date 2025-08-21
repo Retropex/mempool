@@ -13,6 +13,8 @@ export interface KnotsNodeTotals {
   totalNodes: number;
   clearnetNodes: number;
   torNodes: number;
+  totalBitcoinNodes: number;
+  percentageOfTotal: number;
 }
 
 export interface KnotsNodeResponse {
@@ -59,7 +61,13 @@ export class BitnodesService {
           console.error('Error fetching Bitnodes data:', error);
           return of({
             countries: [],
-            totals: { totalNodes: 0, clearnetNodes: 0, torNodes: 0 }
+            totals: { 
+              totalNodes: 0, 
+              clearnetNodes: 0, 
+              torNodes: 0,
+              totalBitcoinNodes: 0,
+              percentageOfTotal: 0
+            }
           });
         })
       );
