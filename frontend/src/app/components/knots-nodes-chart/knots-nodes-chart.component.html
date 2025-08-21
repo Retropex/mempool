@@ -3,6 +3,12 @@
   <div *ngIf="widget">
     <div class="knots-distribution" *ngIf="(knotsNodesObservable$ | async) as knotsData; else loadingKnots">
       <div class="item">
+        <h5 class="card-title d-inline-block" i18n="knots.percentage-of-all">Pourcentage</h5>
+        <p class="card-text">
+          {{ getKnotsPercentageOfTotal(knotsData) | number: '1.2-2' }}%
+        </p>
+      </div>
+      <div class="item">
         <h5 class="card-title d-inline-block" i18n="knots.total-nodes">Total Knots Nodes</h5>
         <p class="card-text">
           {{ getTotalKnotsNodes(knotsData) }}
@@ -89,6 +95,12 @@
     </div>
     <div class="item">
       <h5 class="card-title" i18n="knots.tor-nodes">Tor Nodes</h5>
+      <p class="card-text">
+        <span class="skeleton-loader skeleton-loader-big"></span>
+      </p>
+    </div>
+    <div class="item">
+      <h5 class="card-title" i18n="knots.percentage-of-all">% of All Bitcoin Nodes</h5>
       <p class="card-text">
         <span class="skeleton-loader skeleton-loader-big"></span>
       </p>
