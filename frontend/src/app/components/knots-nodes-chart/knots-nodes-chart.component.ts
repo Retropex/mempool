@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, NgZone, OnInit, HostBinding 
 import { Observable } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
 import { EChartsOption, PieSeriesOption } from '../../graphs/echarts';
-import { BitnodesService, KnotsNodeStats } from '../../services/bitnodes.service';
+import { BitnodesService, KnotsNodeStats, KnotsNodeResponse } from '../../services/bitnodes.service';
 import { originalChartColors as chartColors } from '../../app.constants';
 import { download } from '../../shared/graphs.utils';
 import { isMobile } from '../../shared/common.utils';
@@ -26,7 +26,7 @@ export class KnotsNodesChartComponent implements OnInit {
 
   @HostBinding('attr.dir') dir = 'ltr';
 
-  knotsNodesObservable$: Observable<KnotsNodeStats[]>;
+  knotsNodesObservable$: Observable<KnotsNodeResponse>;
 
   constructor(
     private bitnodesService: BitnodesService,
@@ -155,7 +155,8 @@ export class KnotsNodesChartComponent implements OnInit {
   }
 
   prepareChartOptions() {
-    this.knotsNodesObservable$.subscribe(knotsStats => {
+    this.knotsNodesObservable$.subscribe(knotsData => {
+      const knotsStats = knotsData.countries;
       // Responsive pie size logic similar to pool-ranking and ocean-hashrate
       let pieSize = ['20%', '80%']; // Desktop default
       if (this.widget) {
@@ -243,7 +244,15 @@ export class KnotsNodesChartComponent implements OnInit {
     return (e.offsetWidth < e.scrollWidth);
   }
 
-  getTotalKnotsNodes(knotsStats: KnotsNodeStats[]): number {
-    return knotsStats.reduce((total, country) => total + country.count, 0);
+  getTotalKnotsNodes(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.totalNodes;
+  }
+
+  getClearnetNodes(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.clearnetNodes;
+  }
+
+  getTorNodes(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.torNodes;
   }
 }

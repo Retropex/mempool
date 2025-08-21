@@ -9,13 +9,24 @@ export interface KnotsNodeStats {
   percentage: number;
 }
 
+export interface KnotsNodeTotals {
+  totalNodes: number;
+  clearnetNodes: number;
+  torNodes: number;
+}
+
+export interface KnotsNodeResponse {
+  countries: KnotsNodeStats[];
+  totals: KnotsNodeTotals;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class BitnodesService {
   private cache: {
     lastUpdated: number;
-    data: KnotsNodeStats[];
+    data: KnotsNodeResponse;
   } | null = null;
   
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -27,7 +38,7 @@ export class BitnodesService {
   /**
    * Get Knots nodes distribution by country
    */
-  getKnotsNodeDistribution(): Observable<KnotsNodeStats[]> {
+  getKnotsNodeDistribution(): Observable<KnotsNodeResponse> {
     // Check cache first
     if (this.cache && (Date.now() - this.cache.lastUpdated) < this.CACHE_DURATION) {
       return of(this.cache.data);
@@ -36,7 +47,7 @@ export class BitnodesService {
     // Always use our backend endpoint to avoid CORS issues
     const apiUrl = '/api/v1/bitnodes/knots-stats';
 
-    return this.http.get<KnotsNodeStats[]>(apiUrl)
+    return this.http.get<KnotsNodeResponse>(apiUrl)
       .pipe(
         tap(data => {
           this.cache = {
@@ -46,7 +57,10 @@ export class BitnodesService {
         }),
         catchError((error: HttpErrorResponse) => {
           console.error('Error fetching Bitnodes data:', error);
-          return of([]);
+          return of({
+            countries: [],
+            totals: { totalNodes: 0, clearnetNodes: 0, torNodes: 0 }
+          });
         })
       );
   }
