@@ -95,7 +95,7 @@ function downloadMiningPoolLogos$() {
     console.log(`${LOG_TAG} \tChecking if mining pool logos needs downloading or updating...`);
     const options = {
       host: 'api.github.com',
-      path: '/repos/mempool/mining-pool-logos/contents/',
+      path: '/repos/retropex/mining-pool-logos/contents/',
       method: 'GET',
       headers: {'user-agent': 'node.js'}
     };
@@ -137,7 +137,7 @@ function downloadMiningPoolLogos$() {
                 console.log(`${LOG_TAG} \t\t\t\t${poolLogo.name} is different on the remote, downloading...`);
                 let download_url = poolLogo.download_url;
                 if (MEMPOOL_CDN) {
-                  download_url = download_url.replace("raw.githubusercontent.com/mempool/mining-pool-logos/master", "mempool.space/resources/mining-pools");
+                  download_url = download_url.replace("raw.githubusercontent.com/retropex/mining-pool-logos/master", "mempool.guide/resources/mining-pools");
                 }
                 if (DRY_RUN) {
                   console.log(`${LOG_TAG} \t\tDRY_RUN is set, not downloading ${poolLogo.name} but we should`);
@@ -159,7 +159,7 @@ function downloadMiningPoolLogos$() {
               }
               let download_url = poolLogo.download_url;
               if (MEMPOOL_CDN) {
-                download_url = download_url.replace("raw.githubusercontent.com/mempool/mining-pool-logos/master", "mempool.space/resources/mining-pools");
+                download_url = download_url.replace("raw.githubusercontent.com/retropex/mining-pool-logos/master", "mempool.guide/resources/mining-pools");
               }
               if (DRY_RUN) {
                 console.log(`${LOG_TAG} DRY_RUN is set, not downloading ${poolLogo.name} but it should`);
