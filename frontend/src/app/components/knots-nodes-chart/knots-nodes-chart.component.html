@@ -3,7 +3,7 @@
   <div *ngIf="widget">
     <div class="knots-distribution" *ngIf="(knotsNodesObservable$ | async) as knotsData; else loadingKnots">
       <div class="item">
-        <h5 class="card-title d-inline-block" i18n="knots.percentage-of-all">Pourcentage</h5>
+        <h5 class="card-title d-inline-block" i18n="knots.percentage-of-all">Percentage</h5>
         <p class="card-text">
           {{ getKnotsPercentageOfTotal(knotsData) | number: '1.2-2' }}%
         </p>
