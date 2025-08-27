@@ -9,6 +9,7 @@ import { WebsocketService } from '@app/services/websocket.service';
 import { SeoService } from '@app/services/seo.service';
 import { ActiveFilter, FilterMode, GradientMode, toFlags } from '@app/shared/filters.utils';
 import { detectWebGL } from '@app/shared/graphs.utils';
+import { BitnodesService } from '@app/services/bitnodes.service';
 
 interface MempoolBlocksData {
   blocks: number;
@@ -62,6 +63,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   expiredUtxos$: Observable<FederationUtxo[]>;
   emergencySpentUtxosStats$: Observable<any>;
   fullHistory$: Observable<any>;
+  knotsPercentage: number = 0;
+  totalKnotsNodes: number = 0;
+  totalBitcoinNodes: number = 0;
   isLoad: boolean = true;
   filterSubscription: Subscription;
   mempoolInfoSubscription: Subscription;
@@ -93,7 +97,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private apiService: ApiService,
     private websocketService: WebsocketService,
     private seoService: SeoService,
-    @Inject(PLATFORM_ID) private platformId: object,
+    private bitnodesService: BitnodesService,
+    @Inject(PLATFORM_ID) private platformId: Object,
   ) {
     this.webGlEnabled = this.stateService.isBrowser && detectWebGL();
   }
@@ -418,6 +423,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.currencySubscription = this.stateService.fiatCurrency$.subscribe((fiat) => {
       this.currency = fiat;
+    });
+
+    // Load Knots nodes data
+    this.bitnodesService.getKnotsNodeDistribution().subscribe(knotsData => {
+      this.knotsPercentage = knotsData.totals.percentageOfTotal;
+      this.totalKnotsNodes = knotsData.totals.totalNodes;
+      this.totalBitcoinNodes = Math.round(this.totalKnotsNodes / (this.knotsPercentage / 100));
     });
   }
 
