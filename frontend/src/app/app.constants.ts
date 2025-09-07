@@ -220,6 +220,16 @@ export const specialBlocks = {
     labelEventCompleted: 'Block Subsidy has halved to 3.125 BTC per block',
     networks: ['mainnet', 'testnet', 'testnet4'],
   },
+  '866558': {
+    labelEvent: 'Spam free block n°1',
+    labelEventCompleted: 'Spam free block n°1',
+    networks: ['mainnet'],
+  },
+  '913272': {
+    labelEvent: 'Spam free block n°2',
+    labelEventCompleted: 'Spam free block n°2',
+    networks: ['mainnet'],
+  },
   '1050000': {
     labelEvent: 'Bitcoin\'s 5th Halving',
     labelEventCompleted: 'Block Subsidy has halved to 1.5625 BTC per block',
