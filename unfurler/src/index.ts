@@ -53,7 +53,7 @@ class Server {
         canonical = "https://bitcoin.gob.sv"
         break;
       default:
-        canonical = "https://mempool.space"
+        canonical = "https://mempool.guide"
     }
     this.canonicalHost = canonical;
 
@@ -335,7 +335,7 @@ class Server {
     const matchedRoute = matchRoute(this.network, path);
     let ogImageUrl = config.SERVER.HOST + (matchedRoute.staticImg || matchedRoute.fallbackImg);
     let ogTitle = 'The Mempool Open Source Project®';
-    let ogDescription = 'Explore the full Bitcoin ecosystem with mempool.space';
+    let ogDescription = 'Explore the full Bitcoin ecosystem with mempool.guide';
 
     const canonical = this.canonicalHost + rawPath;
 
@@ -367,7 +367,7 @@ class Server {
     <meta property="twitter:title" content="${ogTitle}">
     <meta property="twitter:description" content="${ogDescription}"/>
     <meta property="twitter:image:src" content="${ogImageUrl}"/>
-    <meta property="twitter:domain" content="mempool.space">
+    <meta property="twitter:domain" content="mempool.guide">
   </head>
   <body></body>
 </html>`;
