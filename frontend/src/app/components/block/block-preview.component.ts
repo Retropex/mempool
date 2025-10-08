@@ -31,6 +31,7 @@ export class BlockPreviewComponent implements OnInit, OnDestroy {
   error: any;
   blockSubsidy: number;
   fees: number;
+  health: number;
   overviewError: any = null;
 
   overviewSubscription: Subscription;
@@ -64,6 +65,7 @@ export class BlockPreviewComponent implements OnInit, OnDestroy {
         this.error = undefined;
         this.overviewError = undefined;
         this.fees = undefined;
+        this.health = undefined;
 
         let isBlockHeight = false;
         if (/^[0-9]+$/.test(blockHash)) {
@@ -112,6 +114,9 @@ export class BlockPreviewComponent implements OnInit, OnDestroy {
         this.setBlockSubsidy();
         if (block?.extras?.reward !== undefined) {
           this.fees = block.extras.reward / 100000000 - this.blockSubsidy;
+        }
+        if (block?.extras?.matchRate !== undefined) {
+          this.health = block.extras.matchRate;
         }
         this.stateService.markBlock$.next({ blockHeight: this.blockHeight });
         this.isLoadingOverview = true;

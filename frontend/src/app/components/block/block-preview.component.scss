@@ -64,6 +64,10 @@
 
 .badge {
   transition: none;
+
+  &.text-bg-success {
+    color: #fff !important;
+  }
 }
 
 .pool-logo {
