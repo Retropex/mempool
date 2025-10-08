@@ -23,32 +23,17 @@
           <td>&lrm;<a [routerLink]="['/block/' | relativeUrl, block?.id]" title="{{ block?.id }}">{{ block?.id | shortenString : 13 }}</a></td>
           </tr> -->
           <tr>
-            <td i18n="block.timestamp">Timestamp</td>
+            <td i18n="block.health">Health</td>
             <td>
-              {{ block?.timestamp * 1000 | date:'yyyy-MM-dd HH:mm' }}
+              <span class="health-badge badge"
+              [class.text-bg-success]="block?.extras?.matchRate >= 99"
+              [class.text-bg-warning]="block?.extras?.matchRate >= 75 && block?.extras?.matchRate < 99"
+              [class.text-bg-danger]="block?.extras?.matchRate < 75"
+              *ngIf="block?.extras?.matchRate != null">
+              {{ block?.extras?.matchRate + "%" || "Unknown" }}</span>
+              <span class="health-badge badge text-bg-secondary" *ngIf="block?.extras?.matchRate == null">Unknown</span>
             </td>
           </tr>
-          <tr>
-            <td i18n="block.weight">Weight</td>
-            <td [innerHTML]="'&lrm;' + (block?.weight | wuBytes: 2)"></td>
-          </tr>
-          <tr *ngIf="block?.extras?.medianFee != undefined">
-            <td class="td-width" i18n="block.median-fee">Median fee</td>
-            <td>~<app-fee-rate [fee]="block?.extras?.medianFee" rounding="1.0-0"></app-fee-rate></td>
-          </tr>
-          <ng-template [ngIf]="fees !== undefined">
-            <tr>
-              <td i18n="block.total-fees|Total fees in a block">Total fees</td>
-              <td *ngIf="network !== 'liquid' && network !== 'liquidtestnet'; else liquidTotalFees">
-                <app-amount [satoshis]="block?.extras.totalFees" digitsInfo="1.2-3" [noFiat]="true"></app-amount>
-              </td>
-              <ng-template #liquidTotalFees>
-                <td>
-                  <app-amount [satoshis]="fees * 100000000" digitsInfo="1.2-2" [noFiat]="true"></app-amount>
-                </td>
-              </ng-template>
-            </tr>
-          </ng-template>
           <tr *ngIf="network !== 'liquid' && network !== 'liquidtestnet' && block?.extras?.pool">
             <td i18n="block.miner">Miner</td>
             <td *ngIf="stateService.env.MINING_DASHBOARD">
@@ -77,6 +62,27 @@
                 {{ block.extras.pool.name }}
               </span>
             </td>
+          </tr>
+          <tr *ngIf="block?.extras?.medianFee != undefined">
+            <td class="td-width" i18n="block.median-fee">Median fee</td>
+            <td>~<app-fee-rate [fee]="block?.extras?.medianFee" rounding="1.0-0"></app-fee-rate></td>
+          </tr>
+          <ng-template [ngIf]="fees !== undefined">
+            <tr>
+              <td i18n="block.total-fees|Total fees in a block">Total fees</td>
+              <td *ngIf="network !== 'liquid' && network !== 'liquidtestnet'; else liquidTotalFees">
+                <app-amount [satoshis]="block?.extras.totalFees" digitsInfo="1.2-3" [noFiat]="true"></app-amount>
+              </td>
+              <ng-template #liquidTotalFees>
+                <td>
+                  <app-amount [satoshis]="fees * 100000000" digitsInfo="1.2-2" [noFiat]="true"></app-amount>
+                </td>
+              </ng-template>
+            </tr>
+          </ng-template>
+          <tr>
+            <td i18n="block.weight">Weight</td>
+            <td [innerHTML]="'&lrm;' + (block?.weight | wuBytes: 2)"></td>
           </tr>
         </tbody>
       </table>
