@@ -61,8 +61,8 @@
   </div>
 
   <!-- Knots Progress + Ocean and Knots Section-->
-  <div class="knots-ocean-section" *ngIf="stateService.network === ''">
-    <div class="knots-progress-fullwidth-container">
+  <div *ngIf="stateService.network === ''">
+    <div class="col knots-progress-fullwidth-container">
       <div class="knots-progress-wrapper">
         <div class="progress-header">
           <h6 class="progress-title" i18n="knots.network-distribution">Bitcoin Knots Network Distribution</h6>
