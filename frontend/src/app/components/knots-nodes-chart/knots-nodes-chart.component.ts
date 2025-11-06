@@ -156,26 +156,42 @@ export class KnotsNodesChartComponent implements OnInit {
 
   prepareChartOptions() {
     this.knotsNodesObservable$.subscribe(knotsData => {
-      const knotsStats = knotsData.countries;
-      // Responsive pie size logic similar to pool-ranking and ocean-hashrate
-      let pieSize = ['20%', '80%']; // Desktop default
-      if (this.widget) {
-        pieSize = isMobile() ? ['20%', '50%'] : ['15%', '60%']; // Widget responsive
-      } else if (isMobile()) {
-        pieSize = ['15%', '60%']; // Mobile non-widget
-      }
+      // Construction des stats Tor/Clearnet
+      const total = knotsData.totals.totalNodes;
+      const clearnet = knotsData.totals.clearnetNodes;
+      const tor = knotsData.totals.torNodes;
+      const pieData = [
+        {
+          value: clearnet,
+          name: 'Clearnet',
+          itemStyle: { color: '#1E88E5' },
+          label: { color: '#1E88E5' },
+          tooltip: {
+            formatter: () => `<b style=\"color: white\">Clearnet</b><br>${clearnet} nodes (${((clearnet/total)*100).toFixed(1)}%)`
+          }
+        },
+        {
+          value: tor,
+          name: 'Tor',
+          itemStyle: { color: '#8E24AA' },
+          label: { color: '#8E24AA' },
+          tooltip: {
+            formatter: () => `<b style=\"color: white\">Tor</b><br>${tor} nodes (${((tor/total)*100).toFixed(1)}%)`
+          }
+        }
+      ];
 
-      // Responsive edge distance logic similar to pool-ranking
-      let edgeDistance: any = '20%';
-      if (isMobile() && this.widget) {
-        edgeDistance = 0;
-      } else if (isMobile() && !this.widget || this.widget) {
-        edgeDistance = 10;
+      // Responsive pie size logic
+      let pieSize = ['20%', '80%'];
+      if (this.widget) {
+        pieSize = isMobile() ? ['20%', '50%'] : ['15%', '60%'];
+      } else if (isMobile()) {
+        pieSize = ['15%', '60%'];
       }
 
       this.chartOptions = {
         animation: false,
-        color: chartColors.filter(color => color !== '#FDD835'),
+        color: ['#1E88E5', '#8E24AA'],
         tooltip: {
           trigger: 'item',
           textStyle: {
@@ -189,7 +205,7 @@ export class KnotsNodesChartComponent implements OnInit {
             name: 'Knots nodes',
             type: 'pie',
             radius: pieSize,
-            data: this.generateKnotsChartSerieData(knotsStats, edgeDistance),
+            data: pieData,
             labelLine: {
               lineStyle: {
                 width: 2,

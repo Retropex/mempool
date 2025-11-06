@@ -245,10 +245,9 @@ class BitcoinRoutes {
 
   private async getBitnodesKnotsStats(req: Request, res: Response) {
     try {
-      // Check if we have cached data that's still valid
       const now = Date.now();
-      if (this.bitnodesCache && 
-          this.bitnodesCache.lastUpdated && 
+      if (this.bitnodesCache &&
+          this.bitnodesCache.lastUpdated &&
           (now - this.bitnodesCache.lastUpdated) < this.BITNODES_CACHE_DURATION) {
         logger.debug('Serving Bitcoin Knots nodes stats from cache');
         res.json(this.bitnodesCache.data);
@@ -264,47 +263,27 @@ class BitcoinRoutes {
       });
 
       const snapshot = response.data;
-      const totalBitcoinNodes = snapshot.total_nodes; // Total number of Bitcoin nodes
-      const countryCount: { [country: string]: number } = {};
+      const totalBitcoinNodes = snapshot.total_nodes;
       let totalKnotsNodesClearnet = 0;
       let torNodeCount = 0;
       let fullCount = 0;
 
-      // Process each node
-      Object.values(snapshot.nodes).forEach((nodeData: any) => {
+      Object.entries(snapshot.nodes).forEach(([address, nodeData]: [string, any]) => {
         const userAgent = nodeData[1];
-        const country = nodeData[7]; // country code
-        const networkType = nodeData[11]; // AS/network type
-
-        // Check if it's a Knots node and not a Tor node
         if (userAgent && userAgent.toLowerCase().includes('knots')) {
-          if ( networkType === 'TOR') {
+          if (address.includes('.onion')) {
             torNodeCount++;
-          }
-          if (country && networkType !== 'TOR') {
-            countryCount[country] = (countryCount[country] || 0) + 1;
+          } else {
             totalKnotsNodesClearnet++;
           }
         }
       });
-      
-      fullCount = torNodeCount + totalKnotsNodesClearnet;
-      
-      // Calculate percentage of Knots nodes against all Bitcoin nodes
-      const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (fullCount / totalBitcoinNodes) * 100 : 0;
-      
-      // Convert to array and calculate percentages
-      const countryStats = Object.entries(countryCount)
-        .map(([country, count]) => ({
-          country,
-          count,
-          percentage: totalKnotsNodesClearnet > 0 ? (count / totalKnotsNodesClearnet) * 100 : 0
-        }))
-        .sort((a, b) => b.count - a.count);
 
-      // Create complete result with totals
+      fullCount = torNodeCount + totalKnotsNodesClearnet;
+      const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (fullCount / totalBitcoinNodes) * 100 : 0;
+
       const result = {
-        countries: countryStats,
+        countries: [],
         totals: {
           totalNodes: fullCount,
           clearnetNodes: totalKnotsNodesClearnet,
@@ -314,24 +293,20 @@ class BitcoinRoutes {
         }
       };
 
-      // Update cache
       this.bitnodesCache = {
         data: result,
         lastUpdated: now
       };
 
-      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodesClearnet} clearnet nodes, ${torNodeCount} Tor nodes, ${fullCount} total nodes (${knotsPercentageOfTotal.toFixed(2)}% of ${totalBitcoinNodes} total Bitcoin nodes) across ${countryStats.length} countries`);
+      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodesClearnet} clearnet nodes, ${torNodeCount} Tor nodes, ${fullCount} total nodes (${knotsPercentageOfTotal.toFixed(2)}% of ${totalBitcoinNodes} total Bitcoin nodes)`);
       res.json(result);
     } catch (error) {
       logger.err(`Error fetching Bitnodes data: ${error}`);
-      
-      // If we have cached data (even if expired), serve it as fallback
       if (this.bitnodesCache && this.bitnodesCache.data) {
         logger.warn('Serving expired cached data due to API error');
         res.json(this.bitnodesCache.data);
         return;
       }
-      
       handleError(req, res, 500, 'Failed to fetch Bitcoin Knots nodes statistics');
     }
   }
