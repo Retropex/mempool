@@ -228,7 +228,7 @@ const downloadMiningPoolLogos = async () => {
   console.log(`${LOG_TAG} \tChecking if mining pool logos needs downloading or updating...`);
 
   try {
-    const poolLogos = await fetchGitHubContents('/repos/mempool/mining-pool-logos/contents/', !!config.githubToken);
+    const poolLogos = await fetchGitHubContents('/repos/retropex/mining-pool-logos/contents/', !!config.githubToken);
 
     let downloadedCount = 0;
     const validFiles = poolLogos.filter(item => item.type === 'file' && item.download_url);
@@ -243,8 +243,8 @@ const downloadMiningPoolLogos = async () => {
         remoteHash: poolLogo.sha,
         downloadUrl: poolLogo.download_url,
         cdnPattern: {
-          from: "raw.githubusercontent.com/mempool/mining-pool-logos/master",
-          to: "mempool.space/resources/mining-pools"
+          from: "raw.githubusercontent.com/retropex/mining-pool-logos/master",
+          to: "mempool.guide/resources/mining-pools"
         },
         itemName: poolLogo.name,
         downloadDir: `${ASSETS_PATH}/mining-pools/`
@@ -280,7 +280,7 @@ const downloadPromoVideoSubtitles = async () => {
         downloadUrl: subtitle.download_url,
         cdnPattern: {
           from: "raw.githubusercontent.com/mempool/mempool-promo/master/subtitles",
-          to: "mempool.space/resources/promo-video"
+          to: "mempool.guide/resources/promo-video"
         },
         itemName: subtitle.name,
         downloadDir: `${ASSETS_PATH}/promo-video/`
