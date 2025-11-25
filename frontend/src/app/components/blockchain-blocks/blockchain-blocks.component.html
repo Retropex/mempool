@@ -79,7 +79,7 @@
         <div class="animated" *ngIf="block.extras?.pool != undefined && showPools">
           <a [attr.data-cy]="'bitcoin-block-' + offset + '-index-' + i + '-pool'" class="badge" [class.miner-name]="block.extras.pool.minerNames?.length > 1 && block.extras.pool.minerNames[1] != ''" [routerLink]="[('/mining/pool/' + block.extras.pool.slug) | relativeUrl]">
             <ng-container *ngIf="block.extras.pool.minerNames?.length > 1 && block.extras.pool.minerNames[1] != ''; else centralisedPool">
-              <img [ngbTooltip]="block.extras.pool.name" class="pool-logo faded" [src]="'/resources/mining-pools/' + block.extras.pool.slug + '.svg'" onError="this.src = '/resources/mining-pools/default.svg'" [alt]="'Logo of ' + block.extras.pool.name + ' mining pool'">
+              <img [ngbTooltip]="block.extras.pool.name" class="pool-logo" [class.faded]="block.extras.pool.name === 'OCEAN'" [src]="'/resources/mining-pools/' + block.extras.pool.slug + '.svg'" onError="this.src = '/resources/mining-pools/default.svg'" [alt]="'Logo of ' + block.extras.pool.name + ' mining pool'">
               {{ block.extras.pool.minerNames[1] }}
             </ng-container>
             <ng-template #centralisedPool>
@@ -87,6 +87,11 @@
               <span *ngIf="poolsWithAntpool.includes(block.extras.pool.slug)"> + <img class="pool-logo" [src]="'/resources/mining-pools/antpool.svg'" [alt]="'Logo of AntPool mining pool'"></span>
             </ng-template>
           </a>
+        </div>
+        <div class="animated powered-by-ocean" *ngIf="block.extras?.pool?.minerNames && block.extras.pool.minerNames[2] != null && block.extras.pool.minerNames[2] != ''">
+          Powered by
+          <img class="pool-logo" [src]="'/resources/mining-pools/ocean.svg'" onError="this.src = '/resources/mining-pools/default.svg'" [alt]="'Logo of OCEAN mining pool'">
+          OCEAN
         </div>
       </div>
     </ng-container>

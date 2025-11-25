@@ -1248,7 +1248,9 @@ class BlocksRepository {
       }
     }
 
-    if (extras.pool.name === 'OCEAN') {
+    var rootpool = parseDATUMTemplateCreator(extras.coinbaseRaw);
+
+    if (rootpool && rootpool[0] === ' OCEAN.XYZ ') {
       extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
     }
 
