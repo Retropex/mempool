@@ -134,28 +134,44 @@ class PoolsParser {
 
   public matchBlockMiner(scriptsig: string, addresses: string[], pools: PoolTag[]): PoolTag | undefined {
     const asciiScriptSig = transactionUtils.hex2ascii(scriptsig);
+    let oceanMatch: PoolTag | undefined;
 
     for (let i = 0; i < pools.length; ++i) {
+      let currentMatch: PoolTag | undefined;
+
       if (addresses.length) {
         const poolAddresses: string[] = typeof pools[i].addresses === 'string' ?
           JSON.parse(pools[i].addresses) : pools[i].addresses;
         for (let y = 0; y < poolAddresses.length; y++) {
           if (addresses.indexOf(poolAddresses[y]) !== -1) {
-            return pools[i];
+            currentMatch = pools[i];
+            break;
           }
         }
       }
 
-      const regexes: string[] = typeof pools[i].regexes === 'string' ?
-        JSON.parse(pools[i].regexes) : pools[i].regexes;
-      for (let y = 0; y < regexes.length; ++y) {
-        const regex = new RegExp(regexes[y], 'i');
-        const match = asciiScriptSig.match(regex);
-        if (match !== null) {
-          return pools[i];
+      if (!currentMatch) {
+        const regexes: string[] = typeof pools[i].regexes === 'string' ?
+          JSON.parse(pools[i].regexes) : pools[i].regexes;
+        for (let y = 0; y < regexes.length; ++y) {
+          const regex = new RegExp(regexes[y], 'i');
+          const match = asciiScriptSig.match(regex);
+          if (match !== null) {
+            currentMatch = pools[i];
+            break;
+          }
+        }
+      }
+
+      if (currentMatch) {
+        if (currentMatch.id === 142 || currentMatch.slug === 'ocean') {
+          oceanMatch = currentMatch;
+        } else {
+          return currentMatch;
         }
       }
     }
+    return oceanMatch;
   }
 
   /**

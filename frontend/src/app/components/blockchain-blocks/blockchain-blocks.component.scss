@@ -351,3 +351,15 @@
   font-weight: bold;
   letter-spacing: 0.5px;
 }
+
+.powered-by-ocean {
+  font-size: 0.65rem; /* ou 0.7rem pour encore plus petit */
+  padding: 2px 4px;
+  margin-top: 8px;
+  line-height: 1.2;
+}
+
+.powered-by-ocean .pool-logo {
+  height: 12px; /* ajustez selon vos besoins */
+  width: auto;
+}

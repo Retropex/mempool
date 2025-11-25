@@ -356,7 +356,9 @@ class Blocks {
           minerNames: null,
         };
 
-        if (extras.pool.name === 'OCEAN') {
+        let rootpool = parseDATUMTemplateCreator(extras.coinbaseRaw);
+
+        if (rootpool && rootpool[0] === ' OCEANXYZ ') {
           extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
         }
       }
