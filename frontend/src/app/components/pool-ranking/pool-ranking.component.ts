@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, NgZone, OnInit, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, NgZone, OnInit, OnChanges, SimpleChanges, HostBinding } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EChartsOption, PieSeriesOption } from '@app/graphs/echarts';
@@ -20,9 +20,10 @@ import { isMobile } from '@app/shared/common.utils';
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PoolRankingComponent implements OnInit {
+export class PoolRankingComponent implements OnInit, OnChanges {
   @Input() height: number = 300;
   @Input() widget = false;
+  @Input() antPoolProxy = false;
 
   miningWindowPreference: string;
   radioGroupForm: UntypedFormGroup;
@@ -36,6 +37,7 @@ export class PoolRankingComponent implements OnInit {
   };
   timespan = '';
   chartInstance: any = undefined;
+  lastMiningStats: any = null;
 
   @HostBinding('attr.dir') dir = 'ltr';
 
@@ -106,10 +108,20 @@ export class PoolRankingComponent implements OnInit {
         }),
         tap(data => {
           this.isLoading = false;
+          this.lastMiningStats = data;
           this.prepareChartOptions(data);
         }),
         shareReplay(1)
       );
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['antPoolProxy'] && !changes['antPoolProxy'].firstChange && this.lastMiningStats) {
+      this.prepareChartOptions(this.lastMiningStats);
+      if (this.chartInstance) {
+        this.chartInstance.setOption(this.chartOptions);
+      }
+    }
   }
 
   generatePoolsChartSerieData(miningStats) {
@@ -118,6 +130,11 @@ export class PoolRankingComponent implements OnInit {
       poolShareThreshold = 2;
     } else if (this.widget) {
       poolShareThreshold = 1;
+    }
+
+    let pools = miningStats.pools;
+    if (this.antPoolProxy) {
+      pools = this.regroupAntPoolProxy(miningStats.pools, miningStats);
     }
 
     const data: object[] = [];
@@ -132,7 +149,7 @@ export class PoolRankingComponent implements OnInit {
       edgeDistance = 10;
     }
 
-    miningStats.pools.forEach((pool) => {
+    pools.forEach((pool) => {
       if (parseFloat(pool.share) < poolShareThreshold) {
         totalShareOther += parseFloat(pool.share);
         totalBlockOther += pool.blockCount;
@@ -321,6 +338,35 @@ export class PoolRankingComponent implements OnInit {
 
   isEllipsisActive(e) {
     return (e.offsetWidth < e.scrollWidth);
+  }
+
+  regroupAntPoolProxy(pools: any[], miningStats: any): any[] {
+    const antPoolProxyNames = ['Braiins Pool', 'Poolin', 'ULTIMUSPOOL', 'Binance Pool', 'SECPOOL', 'Sigmapool.com', 'Rawpool', 'Luxor', 'BTC.com', 'Mining Squared'];
+    
+    const poolsToMerge = pools.filter(p => antPoolProxyNames.includes(p.name));
+    
+    if (poolsToMerge.length === 0) {
+      return pools;
+    }
+
+    const newPools = pools.filter(p => !antPoolProxyNames.includes(p.name)).map(p => ({...p}));
+    
+    let antPoolIndex = newPools.findIndex(p => p.name === 'AntPool');
+    
+    poolsToMerge.forEach(pool => {
+      newPools[antPoolIndex].blockCount += pool.blockCount;
+      newPools[antPoolIndex].lastEstimatedHashrate += pool.lastEstimatedHashrate;
+      newPools[antPoolIndex].lastEstimatedHashrate3d += pool.lastEstimatedHashrate3d;
+      newPools[antPoolIndex].lastEstimatedHashrate1w += pool.lastEstimatedHashrate1w;
+    });
+    newPools[antPoolIndex].name = 'AntPool & Friends';
+    
+    const totalBlocks = miningStats.pools.reduce((sum, p) => sum + p.blockCount, 0);
+    newPools[antPoolIndex].share = ((newPools[antPoolIndex].blockCount / totalBlocks) * 100).toFixed(2);
+    
+    newPools.sort((a, b) => b.blockCount - a.blockCount);
+    
+    return newPools;
   }
 }
 

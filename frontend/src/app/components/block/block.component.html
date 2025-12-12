@@ -196,6 +196,7 @@
               }
             </span>
             <app-mining-pool [slug]="block.extras.pool.slug" [name]="block.extras.pool.name"></app-mining-pool>
+            <span *ngIf="poolsWithAntpool.includes(block.extras.pool.slug)"> (AntPool proxy) <img class="mining-pool-logo" [src]="'/resources/mining-pools/antpool.svg'" [alt]="'Logo of AntPool mining pool'"></span>
           </a>
         </td>
         <td *ngIf="!stateService.env.MINING_DASHBOARD && stateService.env.BASE_MODULE === 'mempool'">

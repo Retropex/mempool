@@ -29,9 +29,12 @@
       <div class="card">
         <div class="card-body ps-2 pe-2">
           <div class="mempool-graph">
-            <app-pool-ranking [height]="poolGraphHeight" [attr.data-cy]="'pool-distribution'" [widget]=true></app-pool-ranking>
+            <app-pool-ranking [height]="poolGraphHeight" [attr.data-cy]="'pool-distribution'" [widget]=true [antPoolProxy]="antPoolProxy"></app-pool-ranking>
           </div>
-          <div class="mt-1"><a [attr.data-cy]="'pool-distribution-view-more'" [routerLink]="['/graphs/mining/pools' | relativeUrl]" i18n="dashboard.view-more">View more &raquo;</a></div>
+          <div class="d-flex justify-content-between align-items-center mt-1">
+            <a [attr.data-cy]="'pool-distribution-view-more'" [routerLink]="['/graphs/mining/pools' | relativeUrl]" i18n="dashboard.view-more">View more &raquo;</a>
+            <app-toggle [textLeft]="'Normal'" [textRight]="'AntPool Proxy'" [checked]="false" (toggleStatusChanged)="onPoolGroupToggleStatusChanged($event)"></app-toggle>
+          </div>
         </div>
       </div>
     </div>
