@@ -18,6 +18,7 @@ import { ServicesApiServices } from '@app/services/services-api.service';
   styleUrls: ['./block-preview.component.scss']
 })
 export class BlockPreviewComponent implements OnInit, OnDestroy {
+  poolsWithAntpool = ['poolin', 'braiinspool', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'luxor', 'btccom', 'miningsquared'];
   network = '';
   block: BlockExtended;
   blockHeight: number;

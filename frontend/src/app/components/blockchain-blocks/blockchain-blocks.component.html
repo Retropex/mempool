@@ -84,6 +84,7 @@
             </ng-container>
             <ng-template #centralisedPool>
               <img class="pool-logo" [src]="'/resources/mining-pools/' + block.extras.pool.slug + '.svg'" onError="this.src = '/resources/mining-pools/default.svg'" [alt]="'Logo of ' + block.extras.pool.name + ' mining pool'"> {{ block.extras.pool.name }}
+              <span *ngIf="poolsWithAntpool.includes(block.extras.pool.slug)"> + <img class="pool-logo" [src]="'/resources/mining-pools/antpool.svg'" [alt]="'Logo of AntPool mining pool'"></span>
             </ng-template>
           </a>
         </div>
