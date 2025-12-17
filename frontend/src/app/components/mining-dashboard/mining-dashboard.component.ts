@@ -15,6 +15,7 @@ import { EventType, NavigationStart, Router } from '@angular/router';
 export class MiningDashboardComponent implements OnInit, AfterViewInit {
   hashrateGraphHeight = 335;
   poolGraphHeight = 375;
+  antPoolProxy = false;
 
   constructor(
     private seoService: SeoService,
@@ -30,6 +31,10 @@ export class MiningDashboardComponent implements OnInit, AfterViewInit {
     this.seoService.setTitle($localize`:@@a681a4e2011bb28157689dbaa387de0dd0aa0c11:Mining Dashboard`);
     this.seoService.setDescription($localize`:@@meta.description.mining.dashboard:Get real-time Bitcoin mining stats like hashrate, difficulty adjustment, block rewards, pool dominance, and more.`);
     this.ogService.setManualOgImage('mining.jpg');
+  }
+  
+  onPoolGroupToggleStatusChanged(event: boolean): void {
+    this.antPoolProxy = event;
   }
 
   ngAfterViewInit(): void {
