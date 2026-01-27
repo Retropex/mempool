@@ -282,9 +282,13 @@ class BitcoinRoutes {
       let totalKnotsNodesClearnet = 0;
       let torNodeCount = 0;
       let fullCount = 0;
+      let bipcount = 0;
 
       Object.entries(snapshot.nodes).forEach(([address, nodeData]: [string, any]) => {
         const userAgent = nodeData[1];
+        if (userAgent && userAgent.toLowerCase().includes('bip110')){
+          bipcount++;
+        }
         if (userAgent && userAgent.toLowerCase().includes('knots')) {
           if (address.includes('.onion')) {
             torNodeCount++;
@@ -304,7 +308,8 @@ class BitcoinRoutes {
           clearnetNodes: totalKnotsNodesClearnet,
           torNodes: torNodeCount,
           totalBitcoinNodes: totalBitcoinNodes,
-          percentageOfTotal: knotsPercentageOfTotal
+          percentageOfTotal: knotsPercentageOfTotal,
+          bipCount: bipcount
         }
       };
 

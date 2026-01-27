@@ -287,3 +287,63 @@
   border-radius: 2px;
   z-index: -1;
 }
+// ============================================
+// BIP110 Styles
+// ============================================
+
+// Block with BIP110 signaling - glowing green border on all cube faces
+.bitcoin-block.bip110-signaling {
+  box-shadow:
+    0 0 8px 2px rgba(0, 255, 136, 0.5),
+    inset 0 0 8px rgba(0, 255, 136, 0.15);
+  border: 2px solid #00ff88;
+  animation: bip110-signal-pulse 2s ease-in-out infinite;
+  animation-delay: -1s; // Out of phase with violation pulse
+
+  &::before {
+    // Left face of cube
+    background-color: rgba(0, 255, 136, 0.2) !important;
+    box-shadow: inset 0 0 8px rgba(0, 255, 136, 0.15);
+  }
+
+  &::after {
+    // Top face of cube
+    background-color: rgba(0, 255, 136, 0.15) !important;
+    box-shadow: inset 0 0 8px rgba(0, 255, 136, 0.1);
+  }
+}
+
+@keyframes bip110-signal-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 8px 2px rgba(0, 255, 136, 0.5),
+      inset 0 0 8px rgba(0, 255, 136, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 15px 4px rgba(0, 255, 136, 0.7),
+      inset 0 0 12px rgba(0, 255, 136, 0.25);
+  }
+}
+
+
+// BIP110 signaling indicator (green)
+.bip110-indicator {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 102;
+}
+
+.badge-bip110-signal-mini {
+  font-size: 8px;
+  padding: 2px 4px;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: #003d1a;
+  border-radius: 3px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}

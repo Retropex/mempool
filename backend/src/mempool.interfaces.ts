@@ -339,6 +339,8 @@ export interface BlockExtension {
   totalInputAmt: number | null;
   // pools-v2.json git hash
   definitionHash: string | undefined;
+  // BIP110 'reduced_data' deployment: miner signaling (version bit 4, threshold 1109/2016)
+  bip110Signaling?: boolean;
 }
 
 /**

@@ -1,19 +1,29 @@
 
 <div class="container-xl dashboard-container" *ngIf="(network$ | async) !== 'liquid'; else liquidDashboard">
-  <div class="row row-cols-1 row-cols-md-2" *ngIf="{ value: (mempoolInfoData$ | async) } as mempoolInfoData">
-    <ng-container>
-      <div class="col card-wrapper">
-        <div class="main-title" i18n="fees-box.transaction-fees">Transaction Fees</div>
-        <div class="card">
-          <div class="card-body less-padding">
-            <app-fees-box class="d-block"></app-fees-box>
+  <ng-container *ngIf="{ value: (mempoolInfoData$ | async) } as mempoolInfoData">
+    <div class="row row-cols-1 row-cols-md-2">
+      <ng-container>
+        <div class="col card-wrapper">
+          <div class="main-title" i18n="fees-box.transaction-fees">Transaction Fees</div>
+          <div class="card">
+            <div class="card-body less-padding">
+              <app-fees-box class="d-block"></app-fees-box>
+            </div>
           </div>
         </div>
+        <div class="col">
+          <app-difficulty></app-difficulty>
+        </div>
+      </ng-container>
+    </div>
+    <div *ngIf="stateService.network === ''">
+      <div class="row bip110-row">
+        <div class="col-12">
+          <app-bip110-deployment></app-bip110-deployment>
+        </div>
       </div>
-      <div class="col">
-        <app-difficulty></app-difficulty>
-      </div>
-    </ng-container>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2">
     <div class="col">
       <div class="card graph-card">
         <div class="card-body ps-lg-3 pe-lg-3 ps-2 pe-2">
@@ -73,6 +83,20 @@
         <div class="progress-container">
           <div class="progress-bg">
             <div class="progress-fill" [style.width.%]="knotsPercentage || 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="knots-progress-fullwidth-container">
+      <div class="knots-progress-wrapper">
+        <div class="progress-header">
+          <h6 class="progress-title" i18n="knots.network-distribution">BIP 110 Network Distribution</h6>
+          <span class="progress-percentage-bip110">{{ bipPercentage?.toFixed(2) || '0.00' }}%</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bg">
+            <div class="progress-fill-bip110" [style.width.%]="bipPercentage?.toFixed(2) || 0"></div>
           </div>
         </div>
       </div>
@@ -186,7 +210,8 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </ng-container>
 </div>
 
 <ng-template #liquidDashboard>

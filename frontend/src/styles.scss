@@ -1664,3 +1664,95 @@ form label:not(.form-check-label):not(.btn) {
 .ngb-dp-header, .ngb-dp-week {
   background-color: var(--bg) !important;
 }
+// ============================================
+// BIP110 Visualization Styles
+// ============================================
+
+$bip110-signal-primary: #00ff88;
+$bip110-signal-secondary: #ffd700;
+$bip110-signal-glow: rgba(0, 255, 136, 0.5);
+$bip110-signal-dark: #003322;
+
+// CSS Variables for BIP110
+:root {
+  --bip110-signal: #{$bip110-signal-primary};
+  --bip110-signal-secondary: #{$bip110-signal-secondary};
+  --bip110-signal-glow: #{$bip110-signal-glow};
+}
+
+// BIP110 Signaling badge (for blocks signaling support)
+.badge-bip110-signal {
+  background: linear-gradient(135deg, $bip110-signal-primary, $bip110-signal-secondary);
+  color: #000;
+  font-weight: bold;
+  animation: bip110-signal-shimmer 3s ease-in-out infinite;
+  box-shadow: 0 0 12px $bip110-signal-glow;
+  border: none;
+}
+
+// Block highlighting for signaling
+.bip110-signaling-block {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid $bip110-signal-primary;
+    border-radius: inherit;
+    animation: bip110-signal-border 2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+// BIP110 Mini badge for blockchain blocks
+.badge-bip110-signal-mini {
+  display: inline-block;
+  padding: 1px 4px;
+  font-size: 8px;
+  font-weight: bold;
+  color: #003d1a;
+  background: linear-gradient(135deg, $bip110-signal-primary 0%, $bip110-signal-secondary 100%);
+  border-radius: 3px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  animation: bip110-signal-shimmer 2s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+// BIP110 indicator container on blockchain blocks
+.bip110-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 10;
+}
+
+// ============================================
+// BIP110 Animations
+// ============================================
+
+@keyframes bip110-signal-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 12px $bip110-signal-glow;
+  }
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 0 20px $bip110-signal-glow, 0 0 30px rgba(0, 255, 136, 0.3);
+  }
+}
+
+@keyframes bip110-signal-border {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 5px $bip110-signal-glow;
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 15px $bip110-signal-glow;
+  }
+}

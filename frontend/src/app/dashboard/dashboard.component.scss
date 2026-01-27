@@ -6,6 +6,13 @@
   }
 }
 
+.bip110-row {
+  margin-bottom: 0;
+  .col-12 {
+    margin-bottom: 1.5rem;
+  }
+}
+
 .card {
   background-color: var(--bg);
   height: 100%;
@@ -522,6 +529,11 @@
       font-weight: 600;
       font-size: 1.1rem;
     }
+    .progress-percentage-bip110 {
+      color: var(--taproot);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
   }
   
   .progress-container {
@@ -537,6 +549,13 @@
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, var(--primary) 0%, var(--mainnet-alt) 100%);
+      transition: width 0.3s ease;
+      border-radius: 0.375rem;
+    }
+    
+    .progress-fill-bip110 {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--taproot) 100%);
       transition: width 0.3s ease;
       border-radius: 0.375rem;
     }

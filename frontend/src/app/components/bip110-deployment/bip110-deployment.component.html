@@ -1,0 +1,124 @@
+<div class="main-title">BIP-110 Deployment</div>
+<div class="card-wrapper">
+  <div class="card">
+    <div class="card-body more-padding">
+      <ng-container *ngIf="(isLoading$ | async) === false && (deployment$ | async) as d; else loading">
+
+        <div class="deployment-row">
+          <!-- Left: badge + description -->
+          <div class="deployment-left">
+            <span class="state-badge" [ngClass]="d.state">
+              <ng-container [ngSwitch]="d.state">
+                <ng-container *ngSwitchCase="'defined'">DEFINED</ng-container>
+                <ng-container *ngSwitchCase="'started'">BIT 4 SIGNALS</ng-container>
+                <ng-container *ngSwitchCase="'locked_in'">LOCKED IN</ng-container>
+                <ng-container *ngSwitchCase="'active'">
+                  <ng-container *ngIf="!d.rulesExpired">ACTIVE</ng-container>
+                  <ng-container *ngIf="d.rulesExpired">EXPIRED</ng-container>
+                </ng-container>
+              </ng-container>
+            </span>
+            <span class="state-description">
+              <ng-container [ngSwitch]="d.state">
+                <ng-container *ngSwitchCase="'defined'">Waiting for deployment to begin</ng-container>
+                <ng-container *ngSwitchCase="'started'">
+                  <ng-container *ngIf="d.inMandatorySignaling">
+                    <span class="mandatory-label">Mandatory signaling</span>
+                  </ng-container>
+                </ng-container>
+                <ng-container *ngSwitchCase="'locked_in'">Activation confirmed</ng-container>
+                <ng-container *ngSwitchCase="'active'">
+                  <ng-container *ngIf="!d.rulesExpired">Rules enforced</ng-container>
+                  <ng-container *ngIf="d.rulesExpired">Enforcement ended</ng-container>
+                </ng-container>
+              </ng-container>
+            </span>
+          </div>
+
+          <!-- Center: progress bar (STARTED only) -->
+          <div class="deployment-center" *ngIf="d.state === 'started'">
+            <div class="progress-bar-container">
+              <div class="progress-fill" [ngClass]="{ 'threshold-reached': d.thresholdReached }"
+                   [style.width.%]="d.signalingPercent">
+              </div>
+              <div class="threshold-line" [style.left.%]="(d.threshold / 2016) * 100"></div>
+            </div>
+            <div class="progress-label">
+              {{ d.periodSignaling }}/{{ d.periodBlocks }} ({{ d.signalingPercent | number:'1.1-1' }}%)
+              &middot; need {{ d.threshold }}/2016
+            </div>
+          </div>
+
+          <!-- Right: stats -->
+          <div class="deployment-right">
+            <ng-container *ngIf="d.state === 'started'">
+              <div class="stat">
+                <span class="stat-value">{{ d.periodSignaling }}</span>
+                <span class="stat-label">Signaling</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ d.periodBlocks }}</span>
+                <span class="stat-label">Period</span>
+              </div>
+              <div class="stat" *ngIf="!d.inMandatorySignaling">
+                <span class="stat-value">{{ d.blocksUntilMandatory | number }}</span>
+                <span class="stat-label">Until mandatory</span>
+              </div>
+              <div class="stat" *ngIf="d.inMandatorySignaling">
+                <span class="stat-value mandatory-text">!</span>
+                <span class="stat-label mandatory-label">Mandatory</span>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="d.state === 'locked_in' && d.activationHeight">
+              <div class="stat">
+                <span class="stat-value">{{ d.activationHeight - d.currentHeight | number }}</span>
+                <span class="stat-label">Until activation</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ d.activationHeight | number }}</span>
+                <span class="stat-label">Activation height</span>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="d.state === 'active' && !d.rulesExpired">
+              <div class="stat">
+                <span class="stat-value">{{ d.blocksUntilExpiry | number }}</span>
+                <span class="stat-label">Blocks remaining</span>
+              </div>
+              <div class="stat" *ngIf="d.expiryHeight">
+                <span class="stat-value">{{ d.expiryHeight | number }}</span>
+                <span class="stat-label">Expiry height</span>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="d.state === 'defined'">
+              <div class="stat">
+                <span class="stat-value">Dec 1, 2025</span>
+                <span class="stat-label">Start date (MTP)</span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <ng-template #loading>
+        <div class="deployment-skeleton">
+          <div class="skeleton-loader" style="width: 80px; height: 18px;"></div>
+          <div class="skeleton-loader" style="width: 200px; height: 8px;"></div>
+          <div class="skeleton-loader" style="width: 120px; height: 18px;"></div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+  <!-- BIP-110 block scan progress (shown while scanning historic blocks) -->
+  <ng-container *ngIf="{ pct: (bip110ScanProgress$ | async) } as scan">
+    <div class="scan-progress" *ngIf="scan.pct !== null && scan.pct >= 0 && scan.pct < 100">
+      <div class="scan-bar-track">
+        <div class="scan-bar-fill" [style.width.%]="scan.pct"></div>
+      </div>
+      <span class="scan-label">Scanning blocks for BIP-110 data: {{ scan.pct | number:'1.0-0' }}%</span>
+    </div>
+  </ng-container>
+</div>

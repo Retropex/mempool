@@ -383,6 +383,9 @@ class Blocks {
       }
     }
 
+    // BIP110 'reduced_data' miner signaling detection (version bit 4, 55% threshold)
+    extras.bip110Signaling = Common.isSignalingBIP110(block.version);
+
     blk.extras = <BlockExtension>extras;
     return <BlockExtended>blk;
   }
@@ -1581,10 +1584,20 @@ class Blocks {
       let block = this.getBlocks().find((b) => b.height === currentHeight);
       if (block) {
         // Using the memory cache (find by height)
+        // Ensure BIP110 data is populated for cached blocks
+        if (block.extras) {
+          // Always recompute from version bit (not cached value) to avoid stale data
+          block.extras.bip110Signaling = Common.isSignalingBIP110(block.version);
+        }
         returnBlocks.push(block);
       } else {
         // Using indexing (find by height, index on the fly, save in database)
         block = await this.$indexBlockByHeight(currentHeight);
+        // Inject BIP110 violation stats from persistent cache
+        // ($indexBlock only fetches coinbase, so violation data is always 0 without this)
+        if (block.extras) {
+          block.extras.bip110Signaling = Common.isSignalingBIP110(block.version);
+        }
         returnBlocks.push(block);
       }
       currentHeight--;

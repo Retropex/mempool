@@ -15,6 +15,7 @@ import config from '../config';
 import transactionUtils from './transaction-utils';
 import rbfCache, { ReplacementInfo } from './rbf-cache';
 import difficultyAdjustment from './difficulty-adjustment';
+import bip110Deployment from './bip110-deployment';
 import feeApi from './fee-api';
 import priceUpdater from '../tasks/price-updater';
 import { ApiPrice } from '../repositories/PricesRepository';
@@ -88,7 +89,7 @@ class WebsocketHandler {
     + '}';
   }
 
-  private updateSocketData(): void {
+  private async updateSocketData(): Promise<void> {
     const _blocks = blocks.getBlocks().slice(-config.MEMPOOL.INITIAL_BLOCKS_AMOUNT);
     const da = difficultyAdjustment.getDifficultyAdjustment();
     this.updateSocketDataFields({
@@ -103,6 +104,7 @@ class WebsocketHandler {
       'loadingIndicators': loadingIndicators.getLoadingIndicators(),
       'da': da?.previousTime ? da : undefined,
       'fees': feeApi.getPreciseRecommendedFee(),
+      'bip110deployment': await bip110Deployment.getDeploymentInfo(),
     });
   }
 
@@ -418,7 +420,7 @@ class WebsocketHandler {
 
           if (parsedMessage.action === 'init') {
             if (!this.socketData['blocks']?.length || !this.socketData['da'] || !this.socketData['backendInfo'] || !this.socketData['conversions']) {
-              this.updateSocketData();
+              await this.updateSocketData();
             }
             if (!this.socketData['blocks']?.length) {
               return;
@@ -1106,6 +1108,9 @@ class WebsocketHandler {
     const fees = feeApi.getPreciseRecommendedFee();
     const mempoolInfo = memPool.getMempoolInfo();
 
+    // Update BIP-110 deployment state
+    bip110Deployment.onNewBlock(block.height);
+
     // pre-compute address transactions
     const addressCache = this.makeAddressCache(transactions);
 
@@ -1117,6 +1122,7 @@ class WebsocketHandler {
       'loadingIndicators': loadingIndicators.getLoadingIndicators(),
       'da': da?.previousTime ? da : undefined,
       'fees': fees,
+      'bip110deployment': await bip110Deployment.getDeploymentInfo(),
     });
 
     const mBlocksWithTransactions = mempoolBlocks.getMempoolBlocksWithTransactions();

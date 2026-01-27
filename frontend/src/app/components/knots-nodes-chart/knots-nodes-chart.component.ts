@@ -284,4 +284,8 @@ export class KnotsNodesChartComponent implements OnInit {
   getKnotsPercentageOfTotal(knotsData: KnotsNodeResponse): number {
     return knotsData.totals.percentageOfTotal;
   }
+  
+  getbip110count(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.bipCount;
+  }
 }

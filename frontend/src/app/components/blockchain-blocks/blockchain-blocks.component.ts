@@ -338,6 +338,14 @@ export class BlockchainBlocksComponent implements OnInit, OnChanges, OnDestroy {
     return this.specialBlocks[height]?.networks.includes(this.stateService.network || 'mainnet') ? true : false;
   }
 
+  hasBIP110Signaling(block: BlockchainBlock): boolean {
+    if (!block || !block.version) {
+      return false;
+    }
+    const versionBit = 4; // BIP110 'reduced_data' deployment (Reduced Data Temporary Softfork)
+    return (Number(block.version) & (1 << versionBit)) === (1 << versionBit);
+  }
+
   getStyleForBlock(block: BlockchainBlock, index: number, animateEnterFrom: number = 0) {
     if (!block || block.placeholder) {
       return this.getStyleForPlaceholderBlock(index, animateEnterFrom);

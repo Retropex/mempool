@@ -51,7 +51,8 @@ export type SpriteUpdateParams = {
   r?: number,
   g?: number,
   b?: number,
-  a?: number
+  a?: number,
+  bip110?: number,
   start?: DOMHighResTimeStamp,
   duration?: number,
   minDuration?: number,
@@ -63,6 +64,7 @@ export type ViewUpdateParams = {
   display: {
     position?: Square,
     color?: Color,
+    bip110?: number,
   },
   start?: number,
   duration?: number,

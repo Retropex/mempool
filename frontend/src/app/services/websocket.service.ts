@@ -427,6 +427,10 @@ export class WebsocketService {
       this.stateService.difficultyAdjustment$.next(response.da);
     }
 
+    if (response.bip110deployment) {
+      this.stateService.bip110Deployment$.next(response.bip110deployment);
+    }
+
     if (response.fees) {
       this.stateService.recommendedFees$.next({
         ...response.fees,

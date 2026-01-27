@@ -1,3 +1,65 @@
+// BIP110 signaling glow effect for the block view panel
+.bip110-signaling-glow {
+  position: relative;
+  background: linear-gradient(135deg, 
+    rgba(0, 255, 136, 0.08) 0%, 
+    rgba(0, 200, 100, 0.05) 25%,
+    rgba(0, 255, 136, 0.10) 50%,
+    rgba(0, 200, 100, 0.05) 75%,
+    rgba(0, 255, 136, 0.08) 100%) !important;
+  border-radius: 6px;
+  box-shadow: 
+    0 0 30px rgba(0, 255, 136, 0.15),
+    0 0 60px rgba(0, 200, 100, 0.08),
+    inset 0 0 40px rgba(0, 255, 136, 0.05);
+  animation: bip110-signaling-container-pulse 2.5s ease-in-out infinite;
+  animation-delay: -1.25s; // Out of phase with violation pulse
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+@keyframes bip110-signaling-container-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 30px rgba(0, 255, 136, 0.15),
+      0 0 60px rgba(0, 200, 100, 0.08),
+      inset 0 0 40px rgba(0, 255, 136, 0.05);
+    border-color: rgba(0, 255, 136, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 50px rgba(0, 255, 136, 0.25),
+      0 0 100px rgba(0, 200, 100, 0.15),
+      inset 0 0 60px rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.35);
+  }
+}
+
+@keyframes bip110-clean-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(46, 204, 113, 0.8), 0 0 30px rgba(0, 255, 136, 0.3);
+  }
+}
+
+@keyframes bip110-container-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 30px rgba(255, 100, 0, 0.25),
+      0 0 60px rgba(255, 60, 0, 0.15),
+      inset 0 0 40px rgba(255, 100, 0, 0.08);
+    border-color: rgba(255, 100, 0, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 50px rgba(255, 100, 0, 0.4),
+      0 0 100px rgba(255, 60, 0, 0.25),
+      inset 0 0 60px rgba(255, 100, 0, 0.12);
+    border-color: rgba(255, 100, 0, 0.5);
+  }
+}
+
 .title-block {
   flex-wrap: wrap;
   align-items: baseline;
@@ -304,5 +366,14 @@ h1 {
       max-width: 100%;
       white-space: nowrap;
     }
+  }
+}
+
+@keyframes bip110-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 107, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 107, 0, 0.9), 0 0 30px rgba(255, 107, 0, 0.4);
   }
 }

@@ -1,4 +1,4 @@
-<div class="container-xl" (window:resize)="onResize($event)">
+<div class="container-xl" [class.bip110-signaling-glow]="block && hasBIP110Signaling(block.version)" (window:resize)="onResize($event)">
 
   <div class="title-block" [class.time-ltr]="timeLtr" id="block">
     <div *ngIf="block?.stale" class="alert alert-mempool" role="alert">
@@ -326,7 +326,7 @@
               <tbody>
                 <tr>
                   <td class="td-width" i18n="transaction.version">Version</td>
-                  <td>{{ block.version | decimal2hex }} <span *ngIf="displayTaprootStatus() && hasTaproot(block.version)" class="badge bg-success ms-1" i18n="tx-features.tag.taproot|Taproot">Taproot</span></td>
+                  <td>{{ block.version | decimal2hex }} <span *ngIf="displayTaprootStatus() && hasTaproot(block.version)" class="badge bg-success ms-1" i18n="tx-features.tag.taproot|Taproot">Taproot</span><span *ngIf="hasBIP110Signaling(block.version)" class="badge badge-bip110-signal ml-1" title="This block signals support for BIP110 (Reduced Data Temporary Softfork, version bit 4)">BIP110 ✓</span></td>
                 </tr>
                 <tr *ngIf="network !== 'liquid' && network !== 'liquidtestnet'">
                   <td i18n="block.bits">Bits</td>
