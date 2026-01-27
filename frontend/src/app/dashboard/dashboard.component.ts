@@ -64,6 +64,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   emergencySpentUtxosStats$: Observable<any>;
   fullHistory$: Observable<any>;
   knotsPercentage: number = 0;
+  bipPercentage: number = 0;
   totalKnotsNodes: number = 0;
   totalBitcoinNodes: number = 0;
   isLoad: boolean = true;
@@ -430,6 +431,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.knotsPercentage = knotsData.totals.percentageOfTotal;
       this.totalKnotsNodes = knotsData.totals.totalNodes;
       this.totalBitcoinNodes = Math.round(this.totalKnotsNodes / (this.knotsPercentage / 100));
+      this.bipPercentage = (knotsData.totals.bipCount * 100) / knotsData.totals.totalBitcoinNodes;
     });
   }
 
