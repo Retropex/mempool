@@ -15,6 +15,7 @@ export interface KnotsNodeTotals {
   torNodes: number;
   totalBitcoinNodes: number;
   percentageOfTotal: number;
+  bipCount: number;
 }
 
 export interface KnotsNodeResponse {
@@ -66,7 +67,8 @@ export class BitnodesService {
               clearnetNodes: 0, 
               torNodes: 0,
               totalBitcoinNodes: 0,
-              percentageOfTotal: 0
+              percentageOfTotal: 0,
+              bipCount: 0,
             }
           });
         })
