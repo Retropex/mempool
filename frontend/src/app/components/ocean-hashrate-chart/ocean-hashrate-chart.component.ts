@@ -156,11 +156,10 @@ export class OceanHashrateChartComponent implements OnInit {
             label: {
               show: true, // Always show labels
               position: 'outside',
-              alignTo: 'edge',
               minMargin: 5,
               edgeDistance: edgeDistance,
               lineHeight: 15,
-              fontSize: this.widget ? 10 : 12,
+              fontSize: 14,
               fontWeight: 'normal',
               formatter: (data: any) => {
                 const percentage = data.data?.percentage || data.percentage || 0;
@@ -175,15 +174,11 @@ export class OceanHashrateChartComponent implements OnInit {
                 }
               }
             },
-            labelLine: {
-              show: true, // Always show label lines
-              length: this.widget ? 10 : 20,
-              length2: this.widget ? 3 : 5,
-              maxSurfaceAngle: 80,
+           labelLine: {
+              length2: 25,
               lineStyle: {
-                color: '#666666',
-                width: 1
-              }
+                width: 2,
+              },
             },
             emphasis: {
               scale: true,
@@ -192,6 +187,11 @@ export class OceanHashrateChartComponent implements OnInit {
                 shadowBlur: 10,
                 shadowOffsetX: 0,
                 shadowColor: 'rgba(0, 0, 0, 0.5)'
+              },
+              labelLine: {
+                lineStyle: {
+                  width: 3,
+                }
               }
             },
             itemStyle: {
