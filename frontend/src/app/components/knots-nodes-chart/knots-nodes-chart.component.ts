@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input, NgZone, OnInit, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, Input, NgZone, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map, shareReplay, tap } from 'rxjs/operators';
-import { EChartsOption, PieSeriesOption } from '../../graphs/echarts';
-import { BitnodesService, KnotsNodeStats, KnotsNodeResponse } from '../../services/bitnodes.service';
-import { originalChartColors as chartColors } from '../../app.constants';
-import { download } from '../../shared/graphs.utils';
+import { shareReplay, tap } from 'rxjs/operators';
+import { EChartsOption } from '../../graphs/echarts';
+import { BitnodesService, KnotsNodeResponse, KnotsNodeStats } from '../../services/bitnodes.service';
 import { isMobile } from '../../shared/common.utils';
+import { download } from '../../shared/graphs.utils';
 
 @Component({
   selector: 'app-knots-nodes-chart',
@@ -196,7 +195,8 @@ export class KnotsNodesChartComponent implements OnInit {
           trigger: 'item',
           textStyle: {
             align: 'left',
-          }
+          },
+          backgroundColor: 'rgba(17, 19, 31, 1)',
         },
         series: [
           {
