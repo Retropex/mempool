@@ -208,6 +208,7 @@ export class KnotsNodesChartComponent implements OnInit {
             radius: pieSize,
             data: pieData,
             labelLine: {
+              length2: 25,
               lineStyle: {
                 width: 2,
               },
