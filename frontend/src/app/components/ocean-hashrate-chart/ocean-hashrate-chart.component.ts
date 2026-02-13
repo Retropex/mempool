@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, NgZone, OnInit, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, Input, NgZone, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map, shareReplay, tap } from 'rxjs/operators';
-import { EChartsOption, PieSeriesOption } from '../../graphs/echarts';
-import { OceanService, OceanTemplateStats, OceanHashrateData } from '../../services/ocean.service';
+import { shareReplay, tap } from 'rxjs/operators';
 import { originalChartColors as chartColors } from '../../app.constants';
-import { download } from '../../shared/graphs.utils';
+import { EChartsOption, PieSeriesOption } from '../../graphs/echarts';
+import { OceanHashrateData, OceanService, OceanTemplateStats } from '../../services/ocean.service';
 import { isMobile } from '../../shared/common.utils';
+import { download } from '../../shared/graphs.utils';
 
 @Component({
   selector: 'app-ocean-hashrate-chart',
@@ -132,7 +132,7 @@ export class OceanHashrateChartComponent implements OnInit {
         tooltip: {
           trigger: 'item',
           textStyle: {
-            color: '#b1b1b1',
+            align: 'left',
           },
           backgroundColor: 'rgba(17, 19, 31, 1)',
           borderRadius: 4,
