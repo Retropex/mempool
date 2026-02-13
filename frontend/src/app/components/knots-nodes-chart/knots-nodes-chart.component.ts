@@ -190,7 +190,7 @@ export class KnotsNodesChartComponent implements OnInit {
       }
 
       this.chartOptions = {
-        animation: false,
+        animation: true,
         color: ['#1E88E5', '#8E24AA'],
         tooltip: {
           trigger: 'item',
@@ -222,6 +222,8 @@ export class KnotsNodesChartComponent implements OnInit {
               borderColor: '#000',
             },
             emphasis: {
+              scale: true,
+              scaleSize: 10,
               itemStyle: {
                 shadowBlur: 40,
                 shadowColor: 'rgba(0, 0, 0, 0.75)',
