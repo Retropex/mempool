@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, NgZone, OnInit, HostBinding } from '@angular/core';
 import { Observable } from 'rxjs';
-import { shareReplay, tap } from 'rxjs/operators';
-import { originalChartColors as chartColors } from '../../app.constants';
+import { map, shareReplay, tap } from 'rxjs/operators';
 import { EChartsOption, PieSeriesOption } from '../../graphs/echarts';
-import { OceanHashrateData, OceanService, OceanTemplateStats } from '../../services/ocean.service';
-import { isMobile } from '../../shared/common.utils';
+import { OceanService, OceanTemplateStats, OceanHashrateData } from '../../services/ocean.service';
+import { originalChartColors as chartColors } from '../../app.constants';
 import { download } from '../../shared/graphs.utils';
+import { isMobile } from '../../shared/common.utils';
 
 @Component({
   selector: 'app-ocean-hashrate-chart',
