@@ -25,6 +25,7 @@ const DUST_RELAY_TX_FEE = 3;
 const MAX_OP_RETURN_RELAY = 83;
 const DEFAULT_PERMIT_BAREMULTISIG = true;
 const MAX_TX_LEGACY_SIGOPS = 2_500 * 4; // witness-adjusted sigops
+const BIP110_VERSION_BIT = 4;                 // BIP110 deployment 'reduced_data' signaling bit
 
 export class Common {
   static nativeAssetId = config.MEMPOOL.NETWORK === 'liquidtestnet' ?
@@ -619,6 +620,17 @@ export class Common {
     }
 
     return isTaproot || !isNotTaproot;
+  }
+  // ============================================
+  // BIP110 Validation Methods
+  // ============================================
+
+  /**
+   * Check if a block version signals BIP110 support.
+   * BIP110 deployment 'reduced_data' uses version bit 4 (threshold: 1109/2016, 55%).
+   */
+  static isSignalingBIP110(version: number): boolean {
+    return (version & (1 << BIP110_VERSION_BIT)) !== 0;
   }
 
   static getTransactionFlags(tx: TransactionExtended, height?: number): number {

@@ -1335,6 +1335,9 @@ class BlocksRepository {
       extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
     }
 
+    // BIP110 'reduced_data' signaling detection (version bit 4, 55% threshold)
+    extras.bip110Signaling = Common.isSignalingBIP110(dbBlk.version);
+
     blk.extras = <BlockExtension>extras;
     return <BlockExtended>blk;
   }

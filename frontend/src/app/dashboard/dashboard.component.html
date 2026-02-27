@@ -1,19 +1,29 @@
 
 <div class="container-xl dashboard-container" *ngIf="(network$ | async) !== 'liquid'; else liquidDashboard">
-  <div class="row row-cols-1 row-cols-md-2" *ngIf="{ value: (mempoolInfoData$ | async) } as mempoolInfoData">
-    <ng-container>
-      <div class="col card-wrapper">
-        <div class="main-title" i18n="fees-box.transaction-fees">Transaction Fees</div>
-        <div class="card">
-          <div class="card-body less-padding">
-            <app-fees-box class="d-block"></app-fees-box>
+  <ng-container *ngIf="{ value: (mempoolInfoData$ | async) } as mempoolInfoData">
+    <div class="row row-cols-1 row-cols-md-2">
+      <ng-container>
+        <div class="col card-wrapper">
+          <div class="main-title" i18n="fees-box.transaction-fees">Transaction Fees</div>
+          <div class="card">
+            <div class="card-body less-padding">
+              <app-fees-box class="d-block"></app-fees-box>
+            </div>
           </div>
         </div>
+        <div class="col">
+          <app-difficulty></app-difficulty>
+        </div>
+      </ng-container>
+    </div>
+    <div *ngIf="stateService.network === ''">
+      <div class="row bip110-row">
+        <div class="col-12">
+          <app-bip110-deployment></app-bip110-deployment>
+        </div>
       </div>
-      <div class="col">
-        <app-difficulty></app-difficulty>
-      </div>
-    </ng-container>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2">
     <div class="col">
       <div class="card graph-card">
         <div class="card-body pl-lg-3 pr-lg-3 pl-2 pr-2">
@@ -213,7 +223,8 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </ng-container>
 </div>
 
 <ng-template #liquidDashboard>

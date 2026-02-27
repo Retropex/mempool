@@ -11,6 +11,7 @@
       <div [attr.data-cy]="'bitcoin-block-offset-' + offset + '-index-' + i"
         class="text-center bitcoin-block mined-block blockchain-blocks-offset-{{ offset }}-index-{{ i }}"
         [class.offscreen]="!static && count && i >= count"
+        [class.bip110-signaling]="hasBIP110Signaling(block)"
         id="bitcoin-block-{{ block.height }}" [ngStyle]="blockStyles[i]"
         [style]="blockTransformation"
         [class.blink-bg]="isSpecial(block.height)">

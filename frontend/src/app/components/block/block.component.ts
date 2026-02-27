@@ -541,6 +541,11 @@ export class BlockComponent implements OnInit, OnDestroy {
     return (Number(version) & (1 << versionBit)) === (1 << versionBit);
   }
 
+  hasBIP110Signaling(version: number): boolean {
+    const versionBit = 4; // BIP110 'reduced_data' deployment (Reduced Data Temporary Softfork)
+    return (Number(version) & (1 << versionBit)) === (1 << versionBit);
+  }
+
   displayTaprootStatus(): boolean {
     if (this.stateService.network !== '') {
       return false;
