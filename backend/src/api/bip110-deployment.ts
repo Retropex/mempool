@@ -1,5 +1,6 @@
 import logger from '../logger';
 import blocks from './blocks';
+import bitcoinApiFactory from './bitcoin/bitcoin-api-factory';
 import { Common } from './common';
 
 /**
@@ -74,13 +75,13 @@ class Bip110DeploymentApi {
   /**
    * Get the current deployment info. Recomputes only when chain tip changes.
    */
-  public getDeploymentInfo(): Bip110DeploymentInfo | null {
+  public async getDeploymentInfo(): Promise<Bip110DeploymentInfo | null> {
     const currentHeight = blocks.getCurrentBlockHeight();
     if (currentHeight < 0) {
       return null;
     }
     if (currentHeight !== this.lastHeight || !this.cachedInfo) {
-      this.cachedInfo = this.computeDeploymentInfo(currentHeight);
+      this.cachedInfo = await this.computeDeploymentInfo(currentHeight);
       this.lastHeight = currentHeight;
     }
     return this.cachedInfo;
@@ -89,7 +90,7 @@ class Bip110DeploymentApi {
   /**
    * Compute the full deployment state for a given chain tip height.
    */
-  private computeDeploymentInfo(currentHeight: number): Bip110DeploymentInfo {
+  private async computeDeploymentInfo(currentHeight: number): Promise<Bip110DeploymentInfo> {
     const state = this.computeState(currentHeight);
 
     // Current retarget period signaling stats
@@ -97,7 +98,7 @@ class Bip110DeploymentApi {
     const periodBlocks = (currentHeight % RETARGET_PERIOD) + 1;
 
     // Count signaling blocks in the current retarget period from the in-memory block cache
-    const periodSignaling = this.countSignalingInCurrentPeriod(periodStartHeight, currentHeight);
+    const periodSignaling = await this.countSignalingInCurrentPeriod(periodStartHeight, currentHeight);
     const signalingPercent = periodBlocks > 0 ? (periodSignaling / periodBlocks) * 100 : 0;
     const thresholdReached = periodSignaling >= THRESHOLD;
 
@@ -202,7 +203,7 @@ class Bip110DeploymentApi {
    * Called when a new block arrives. If we detect threshold reached at a
    * retarget boundary, record the lock-in height.
    */
-  public onNewBlock(height: number): void {
+  public async onNewBlock(height: number): Promise<void> {
     if (this.lockedInHeight != null) {
       return; // Already locked in
     }
@@ -211,7 +212,7 @@ class Bip110DeploymentApi {
     const posInPeriod = height % RETARGET_PERIOD;
     if (posInPeriod === RETARGET_PERIOD - 1) {
       const periodStart = height - posInPeriod;
-      const signaling = this.countSignalingInCurrentPeriod(periodStart, height);
+      const signaling = await this.countSignalingInCurrentPeriod(periodStart, height);
       if (signaling >= THRESHOLD) {
         this.lockedInHeight = height + 1; // Lock-in happens at the next retarget boundary
         logger.info(`BIP-110: Threshold reached at height ${height} (${signaling}/${RETARGET_PERIOD}). LOCKED_IN at ${this.lockedInHeight}.`);
@@ -227,14 +228,14 @@ class Bip110DeploymentApi {
    * Count signaling blocks in the current retarget period using the in-memory
    * block cache. Falls back to 0 if blocks aren't in memory.
    */
-  private countSignalingInCurrentPeriod(periodStart: number, currentHeight: number): number {
-    const cachedBlocks = blocks.getBlocks();
+  private async countSignalingInCurrentPeriod(periodStart: number, currentHeight: number): Promise<number> {
     let count = 0;
-    for (const block of cachedBlocks) {
-      if (block.height >= periodStart && block.height <= currentHeight) {
-        if (Common.isSignalingBIP110(block.version)) {
-          count++;
-        }
+    let hash, blockdata;
+    for (let i = currentHeight; i >= periodStart; i--){
+      hash = await bitcoinApiFactory.$getBlockHash(i);
+      blockdata = await blocks.$getBlock(hash);
+      if (Common.isSignalingBIP110(blockdata.version)){
+        count++;
       }
     }
     return count;
