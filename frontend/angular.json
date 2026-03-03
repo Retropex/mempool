@@ -180,6 +180,21 @@
             ],
             "styles": [
               "src/styles.scss",
+              {
+                "input": "src/theme-contrast.scss",
+                "bundleName": "contrast",
+                "inject": false
+              },
+              {
+                "input": "src/theme-wiz.scss",
+                "bundleName": "wiz",
+                "inject": false
+              },
+              {
+                "input": "src/theme-bukele.scss",
+                "bundleName": "bukele",
+                "inject": false
+              },
               "node_modules/@fortawesome/fontawesome-svg-core/styles.css"
             ],
             "vendorChunk": true,

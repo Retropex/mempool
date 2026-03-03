@@ -1,12 +1,12 @@
 @use "sass:color";
 
 /* Theme */
-$bg: #11131f;
-$active-bg: #000000;
+$bg: #1d1f31;
+$active-bg: #11131f;
 $hover-bg: #12131e;
 $fg: #fff;
 $nav-bg: $bg;
-$title-fg: #2055e3;
+$title-fg: #4a68b9;
 
 $taproot: #eba814;
 $taproot-light: #d5a90a;
@@ -110,13 +110,13 @@ $dropdown-link-active-bg: $active-bg;
   --skeleton-bg: #2e324e;
   --skeleton-bg-light: #5d6182;
 
-  --box-bg: #171c2a;
-  --stat-box-bg: #0b1018;
+  --box-bg: #24273e;
+  --stat-box-bg: #181b2d;
   --alert-bg: #3a1c61;
   --navbar-bg: #212121;
-  --transparent-fg: #ffffffbb;
-  --fade-out-box-bg-start: rgba(23, 28, 42, 0);
-  --fade-out-box-bg-end: rgba(23, 28, 42, 1);
+  --transparent-fg: #ffffff66;
+  --fade-out-box-bg-start: rgba(36, 39, 62, 0);
+  --fade-out-box-bg-end: rgba(36, 39, 62, 1);
   --opacity: 0.57;
 
   --testnet: #1d486f;
@@ -135,12 +135,12 @@ $dropdown-link-active-bg: $active-bg;
   --taproot-light: #d5a90a;
   --taproot-dark: #9d7c05;
 
-  --green: #83fd00;
-  --red: #ff3d00;
+  --green: #3bcc49;
+  --red: #dc3545;
   --yellow: #fff000;
-  --grey: #7e7e7e;
+  --grey: #6c757d;
   --tooltip-grey: #b1b1b1;
-  --orange: #ff9f00;
+  --orange: #b86d12;
 
   --search-button: #4d2d77;
   --search-button-border: #472a6e;
