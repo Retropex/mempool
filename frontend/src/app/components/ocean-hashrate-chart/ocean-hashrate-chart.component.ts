@@ -12,6 +12,7 @@ import { isMobile } from '../../shared/common.utils';
   templateUrl: './ocean-hashrate-chart.component.html',
   styleUrls: ['./ocean-hashrate-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class OceanHashrateChartComponent implements OnInit {
   @Input() height: number = 300;

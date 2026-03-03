@@ -12,6 +12,7 @@ import { isMobile } from '../../shared/common.utils';
   templateUrl: './knots-nodes-chart.component.html',
   styleUrls: ['./knots-nodes-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class KnotsNodesChartComponent implements OnInit {
   @Input() height: number = 300;

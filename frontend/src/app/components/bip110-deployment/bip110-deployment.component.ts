@@ -9,6 +9,7 @@ import { Bip110DeploymentInfo } from '@interfaces/node-api.interface';
   templateUrl: './bip110-deployment.component.html',
   styleUrls: ['./bip110-deployment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class Bip110DeploymentComponent implements OnInit {
   deployment$: Observable<Bip110DeploymentInfo>;
