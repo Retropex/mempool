@@ -402,7 +402,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.knotsPercentage = knotsData.totals.percentageOfTotal;
       this.totalKnotsNodes = knotsData.totals.totalNodes;
       this.totalBitcoinNodes = Math.round(this.totalKnotsNodes / (this.knotsPercentage / 100));
-      this.bipPercentage = (knotsData.totals.bipCount * 100) / knotsData.totals.totalBitcoinNodes;
+      this.bipPercentage = knotsData.totals.totalBitcoinNodes > 0 ? (knotsData.totals.bipCount * 100) / knotsData.totals.totalBitcoinNodes : 0;
     });
   }
 

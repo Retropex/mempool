@@ -269,36 +269,33 @@ class BitcoinRoutes {
         return;
       }
 
-      logger.debug('Fetching fresh Bitcoin Knots nodes stats from Bitnodes API');
-      const response = await axios.get('https://bitnodes.io/api/v1/snapshots/latest', {
-        timeout: 10000,
+      logger.debug('Fetching fresh Bitcoin Knots nodes stats from Luke Dashjr API');
+      const response = await axios.get('https://luke.dashjr.org/programs/bitcoin/files/charts/data/uainfo.json', {
+        timeout: 15000,
         headers: {
           'User-Agent': 'Mempool.space/1.0'
         }
       });
 
-      const snapshot = response.data;
-      const totalBitcoinNodes = snapshot.total_nodes;
+      const uainfo = response.data;
+      let totalBitcoinNodes = 0;
       let totalKnotsNodesClearnet = 0;
       let torNodeCount = 0;
-      let fullCount = 0;
       let bipcount = 0;
 
-      Object.entries(snapshot.nodes).forEach(([address, nodeData]: [string, any]) => {
-        const userAgent = nodeData[1];
-        if (userAgent && userAgent.toLowerCase().includes('bip110')){
-          bipcount++;
+      Object.entries(uainfo).forEach(([ua, data]: [string, any]) => {
+        const nodeCount = (data.listening || 0) + (data.est_unreachable || 0);
+        totalBitcoinNodes += nodeCount;
+        const uaLower = ua.toLowerCase();
+        if (uaLower.includes('bip110')) {
+          bipcount += nodeCount;
         }
-        if (userAgent && userAgent.toLowerCase().includes('knots')) {
-          if (address.includes('.onion')) {
-            torNodeCount++;
-          } else {
-            totalKnotsNodesClearnet++;
-          }
+        if (uaLower.includes('knots')) {
+          totalKnotsNodesClearnet += nodeCount;
         }
       });
 
-      fullCount = torNodeCount + totalKnotsNodesClearnet;
+      const fullCount = totalKnotsNodesClearnet + torNodeCount;
       const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (fullCount / totalBitcoinNodes) * 100 : 0;
 
       const result = {
