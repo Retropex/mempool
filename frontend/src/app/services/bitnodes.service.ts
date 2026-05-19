@@ -11,6 +11,8 @@ export interface KnotsNodeStats {
 
 export interface KnotsNodeTotals {
   totalNodes: number;
+  ipv4Nodes: number;
+  ipv6Nodes: number;
   clearnetNodes: number;
   torNodes: number;
   totalBitcoinNodes: number;
@@ -63,6 +65,8 @@ export class BitnodesService {
             countries: [],
             totals: { 
               totalNodes: 0, 
+              ipv4Nodes: 0,
+              ipv6Nodes: 0,
               clearnetNodes: 0, 
               torNodes: 0,
               totalBitcoinNodes: 0,

@@ -9,15 +9,15 @@
         </p>
       </div>
       <div class="item">
-        <h5 class="card-title d-inline-block" i18n="knots.clearnet-nodes">Clearnet Nodes</h5>
+        <h5 class="card-title d-inline-block" i18n="knots.ipv4-nodes">IPv4 Nodes</h5>
         <p class="card-text">
-          {{ getClearnetNodes(knotsData) }}
+          {{ getIPv4Nodes(knotsData) }}
         </p>
       </div>
       <div class="item">
-        <h5 class="card-title d-inline-block" i18n="knots.tor-nodes">Tor Nodes</h5>
+        <h5 class="card-title d-inline-block" i18n="knots.ipv6-nodes">IPv6 Nodes</h5>
         <p class="card-text">
-          {{ getTorNodes(knotsData) }}
+          {{ getIPv6Nodes(knotsData) }}
         </p>
       </div>
     </div>
@@ -58,15 +58,15 @@
       <tbody [attr.data-cy]="'knots-table'" *ngIf="(knotsNodesObservable$ | async) as knotsData">
         <tr>
           <td class="d-none d-md-table-cell">1</td>
-          <td>Clearnet</td>
-          <td>{{ getClearnetNodes(knotsData) }}</td>
-          <td>{{ (getClearnetNodes(knotsData) / getTotalKnotsNodes(knotsData) * 100) | number: '1.1-1' }}%</td>
+          <td>IPv4</td>
+          <td>{{ getIPv4Nodes(knotsData) }}</td>
+          <td>{{ (getIPv4Nodes(knotsData) / getTotalKnotsNodes(knotsData) * 100) | number: '1.1-1' }}%</td>
         </tr>
         <tr>
           <td class="d-none d-md-table-cell">2</td>
-          <td>Tor</td>
-          <td>{{ getTorNodes(knotsData) }}</td>
-          <td>{{ (getTorNodes(knotsData) / getTotalKnotsNodes(knotsData) * 100) | number: '1.1-1' }}%</td>
+          <td>IPv6</td>
+          <td>{{ getIPv6Nodes(knotsData) }}</td>
+          <td>{{ (getIPv6Nodes(knotsData) / getTotalKnotsNodes(knotsData) * 100) | number: '1.1-1' }}%</td>
         </tr>
         <tr style="border-top: 1px solid #555">
           <td class="d-none d-md-table-cell"></td>
@@ -88,13 +88,13 @@
       </p>
     </div>
     <div class="item">
-      <h5 class="card-title" i18n="knots.clearnet-nodes">Clearnet Nodes</h5>
+      <h5 class="card-title" i18n="knots.ipv4-nodes">IPv4 Nodes</h5>
       <p class="card-text">
         <span class="skeleton-loader skeleton-loader-big"></span>
       </p>
     </div>
     <div class="item">
-      <h5 class="card-title" i18n="knots.tor-nodes">Tor Nodes</h5>
+      <h5 class="card-title" i18n="knots.ipv6-nodes">IPv6 Nodes</h5>
       <p class="card-text">
         <span class="skeleton-loader skeleton-loader-big"></span>
       </p>
