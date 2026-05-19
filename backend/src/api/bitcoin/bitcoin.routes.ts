@@ -319,40 +319,56 @@ class BitcoinRoutes {
         return;
       }
 
-      logger.debug('Fetching fresh Bitcoin Knots nodes stats from Bitnodes API');
-      const response = await axios.get('https://bitnodes.io/api/v1/snapshots/latest', {
+      logger.debug('Fetching fresh Bitcoin Knots nodes stats from seed.txt');
+      const response = await axios.get('https://haf.ovh/seed.txt', {
         timeout: 10000,
         headers: {
           'User-Agent': 'Mempool.space/1.0'
-        }
+        },
+        responseType: 'text'
       });
 
-      const snapshot = response.data;
-      const totalBitcoinNodes = snapshot.total_nodes;
-      let totalKnotsNodesClearnet = 0;
-      let torNodeCount = 0;
-      let fullCount = 0;
+      const lines: string[] = (response.data as string).split('\n');
+      let totalBitcoinNodes = 0;
+      let totalKnotsNodes = 0;
+      let bipcount = 0;
+      let ipv4Nodes = 0;
+      let ipv6Nodes = 0;
 
-      Object.entries(snapshot.nodes).forEach(([address, nodeData]: [string, any]) => {
-        const userAgent = nodeData[1];
-        if (userAgent && userAgent.toLowerCase().includes('knots')) {
-          if (address.includes('.onion')) {
-            torNodeCount++;
-          } else {
-            totalKnotsNodesClearnet++;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#') || trimmed === '...') continue;
+
+        // Process user agent when found (quoted string starting with /)
+        const uaMatch = trimmed.match(/"(\/[^"]*)"/);
+        if (uaMatch) {
+          totalBitcoinNodes++;
+          const ua = uaMatch[1].toLowerCase();
+          if (ua.includes('bip110')) bipcount++;
+          if (ua.includes('20260508')) bipcount++;
+          if (ua.includes('knots')) {
+            totalKnotsNodes++;
+            // Detect IPv6 by bracket notation [::] or plain hex:colon address before port
+            const isIPv6 = trimmed.startsWith('[') || /^[0-9a-fA-F]{0,4}(:[0-9a-fA-F]{0,4}){2,}/.test(trimmed);
+            if (isIPv6) {
+              ipv6Nodes++;
+            } else {
+              ipv4Nodes++;
+            }
           }
         }
-      });
+      }
 
-      fullCount = torNodeCount + totalKnotsNodesClearnet;
-      const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (fullCount / totalBitcoinNodes) * 100 : 0;
+      const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (totalKnotsNodes / totalBitcoinNodes) * 100 : 0;
 
       const result = {
         countries: [],
         totals: {
-          totalNodes: fullCount,
-          clearnetNodes: totalKnotsNodesClearnet,
-          torNodes: torNodeCount,
+          totalNodes: totalKnotsNodes,
+          ipv4Nodes: ipv4Nodes,
+          ipv6Nodes: ipv6Nodes,
+          clearnetNodes: totalKnotsNodes,
+          torNodes: 0,
           totalBitcoinNodes: totalBitcoinNodes,
           percentageOfTotal: knotsPercentageOfTotal
         }
@@ -363,7 +379,7 @@ class BitcoinRoutes {
         lastUpdated: now
       };
 
-      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodesClearnet} clearnet nodes, ${torNodeCount} Tor nodes, ${fullCount} total nodes (${knotsPercentageOfTotal.toFixed(2)}% of ${totalBitcoinNodes} total Bitcoin nodes)`);
+      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodes} nodes (${knotsPercentageOfTotal.toFixed(2)}% of ${totalBitcoinNodes} total Bitcoin nodes)`);
       res.json(result);
     } catch (error) {
       logger.err(`Error fetching Bitnodes data: ${error}`);

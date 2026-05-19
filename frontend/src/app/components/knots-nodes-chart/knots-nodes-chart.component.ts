@@ -157,27 +157,27 @@ export class KnotsNodesChartComponent implements OnInit {
 
   prepareChartOptions() {
     this.knotsNodesObservable$.subscribe(knotsData => {
-      // Construction des stats Tor/Clearnet
+      // Construction des stats IPv4/IPv6
       const total = knotsData.totals.totalNodes;
-      const clearnet = knotsData.totals.clearnetNodes;
-      const tor = knotsData.totals.torNodes;
+      const ipv4 = knotsData.totals.ipv4Nodes;
+      const ipv6 = knotsData.totals.ipv6Nodes;
       const pieData = [
         {
-          value: clearnet,
-          name: 'Clearnet',
+          value: ipv4,
+          name: 'IPv4',
           itemStyle: { color: '#1E88E5' },
           label: { color: '#1E88E5' },
           tooltip: {
-            formatter: () => `<b style=\"color: white\">Clearnet</b><br>${clearnet} nodes (${((clearnet/total)*100).toFixed(1)}%)`
+            formatter: () => `<b style=\"color: white\">IPv4</b><br>${ipv4} nodes (${((ipv4/total)*100).toFixed(1)}%)`
           }
         },
         {
-          value: tor,
-          name: 'Tor',
+          value: ipv6,
+          name: 'IPv6',
           itemStyle: { color: '#8E24AA' },
           label: { color: '#8E24AA' },
           tooltip: {
-            formatter: () => `<b style=\"color: white\">Tor</b><br>${tor} nodes (${((tor/total)*100).toFixed(1)}%)`
+            formatter: () => `<b style=\"color: white\">IPv6</b><br>${ipv6} nodes (${((ipv6/total)*100).toFixed(1)}%)`
           }
         }
       ];
@@ -275,6 +275,14 @@ export class KnotsNodesChartComponent implements OnInit {
 
   getTorNodes(knotsData: KnotsNodeResponse): number {
     return knotsData.totals.torNodes;
+  }
+
+  getIPv4Nodes(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.ipv4Nodes;
+  }
+
+  getIPv6Nodes(knotsData: KnotsNodeResponse): number {
+    return knotsData.totals.ipv6Nodes;
   }
 
   getTotalBitcoinNodes(knotsData: KnotsNodeResponse): number {
