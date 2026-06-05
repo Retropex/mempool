@@ -19,7 +19,7 @@ import { ServicesApiServices } from '@app/services/services-api.service';
   standalone: false,
 })
 export class BlockPreviewComponent implements OnInit, OnDestroy {
-  poolsWithAntpool = ['poolin', 'braiinspool', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'luxor', 'btccom', 'miningsquared'];
+  poolsWithAntpool = ['poolin', 'braiinspool', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'btccom', 'miningsquared'];
   network = '';
   block: BlockExtended;
   blockHeight: number;

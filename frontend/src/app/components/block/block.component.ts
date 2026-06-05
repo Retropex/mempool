@@ -44,7 +44,7 @@ interface ComparisonStats {
   `],
 })
 export class BlockComponent implements OnInit, OnDestroy {
-  poolsWithAntpool = ['poolin', 'braiinspool', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'luxor', 'btccom', 'miningsquared'];
+  poolsWithAntpool = ['poolin', 'braiinspool', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'btccom', 'miningsquared'];
   network = '';
   block: BlockExtended;
   blockAudit: BlockAudit = undefined;

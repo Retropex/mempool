@@ -341,7 +341,7 @@ export class PoolRankingComponent implements OnInit, OnChanges {
   }
 
   regroupAntPoolProxy(pools: any[], miningStats: any): any[] {
-    const antPoolProxyNames = ['Braiins Pool', 'Poolin', 'ULTIMUSPOOL', 'Binance Pool', 'SECPOOL', 'Sigmapool.com', 'Rawpool', 'Luxor', 'BTC.com', 'Mining Squared'];
+    const antPoolProxyNames = ['Braiins Pool', 'Poolin', 'ULTIMUSPOOL', 'Binance Pool', 'SECPOOL', 'Sigmapool.com', 'Rawpool', 'BTC.com', 'Mining Squared'];
     
     const poolsToMerge = pools.filter(p => antPoolProxyNames.includes(p.name));
     
