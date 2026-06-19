@@ -510,6 +510,39 @@ class BlocksRepository {
   }
 
   /**
+   * Get the latest block mined by a specific mining pool.
+   * Optimized for minimal DB cost (single row, indexed pool_id, LIMIT 1).
+   * @asyncSafe
+   */
+  public async $getLatestBlockByPool(slug: string): Promise<BlockExtended | null> {
+    const pool = await PoolsRepository.$getPool(slug);
+    if (!pool) {
+      throw new Error('This mining pool does not exist');
+    }
+
+    try {
+      const [rows]: any[] = await DB.query(`
+        SELECT ${BLOCK_DB_FIELDS}
+        FROM blocks
+        JOIN pools ON blocks.pool_id = pools.id
+        WHERE pool_id = ? AND stale = 0
+        ORDER BY height DESC
+        LIMIT 1`,
+        [pool.id]
+      );
+
+      if (rows.length <= 0) {
+        return null;
+      }
+
+      return await this.formatDbBlockIntoExtendedBlock(rows[0] as DatabaseBlock);
+    } catch (e) {
+      logger.err('Cannot get latest block for this pool. Reason: ' + (e instanceof Error ? e.message : e));
+      throw e;
+    }
+  }
+
+  /**
    * Get blocks mined by a specific mining pool
    * @asyncSafe
    */

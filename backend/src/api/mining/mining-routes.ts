@@ -18,6 +18,7 @@ class MiningRoutes {
       .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pools', this.$listPools)
       .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pools/:interval', this.$getPools)
       .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pool/:slug/hashrate', this.$getPoolHistoricalHashrate)
+      .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pool/:slug/block/latest', this.$getPoolLatestBlock)
       .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pool/:slug/blocks', this.$getPoolBlocks)
       .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pool/:slug/blocks/:height', this.$getPoolBlocks)
       .get(config.MEMPOOL.API_URL_PREFIX + 'mining/pool/:slug', this.$getPool)
@@ -107,6 +108,26 @@ class MiningRoutes {
         handleError(req, res, 404, e.message);
       } else {
         handleError(req, res, 500, 'Failed to get blocks for pool');
+      }
+    }
+  }
+
+  private async $getPoolLatestBlock(req: Request, res: Response) {
+    try {
+      const latestBlock = await BlocksRepository.$getLatestBlockByPool(req.params.slug);
+      res.header('Pragma', 'public');
+      res.header('Cache-control', 'public, max-age=60');
+      res.setHeader('Expires', new Date(Date.now() + 1000 * 60).toUTCString());
+      if (!latestBlock) {
+        handleError(req, res, 404, 'No block found for this pool');
+        return;
+      }
+      res.json(latestBlock);
+    } catch (e) {
+      if (e instanceof Error && e.message.indexOf('This mining pool does not exist') > -1) {
+        handleError(req, res, 404, e.message);
+      } else {
+        handleError(req, res, 500, 'Failed to get latest block for pool');
       }
     }
   }
