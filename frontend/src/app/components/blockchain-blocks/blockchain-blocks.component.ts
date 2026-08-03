@@ -31,7 +31,7 @@ export class BlockchainBlocksComponent implements OnInit, OnChanges, OnDestroy {
   @Input() showPools: boolean = true;
   @Input() getHref?: (index, block) => string = (index, block) => `/block/${block.id}`;
   
-  poolsWithAntpool = ['poolin', 'braiinspool', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'btccom', 'miningsquared'];
+  poolsWithAntpool = ['poolin', 'ultimuspool', 'binancepool', 'secpool', 'sigmapoolcom', 'rawpool', 'btccom', 'miningsquared'];
   
   specialBlocks = specialBlocks;
   network = '';
