@@ -321,6 +321,8 @@ class Blocks {
 
     const header = await bitcoinClient.getBlockHeader(block.id, false);
     extras.header = header;
+    extras.headerVersion = Common.getBlockHeaderVersion(header);
+    extras.headerV2 = Common.getBlockHeaderV2Fields(header);
 
     const coinStatsIndex = indexer.isCoreIndexReady('coinstatsindex');
     if (coinStatsIndex !== null && coinStatsIndex.best_block_height >= block.height) {

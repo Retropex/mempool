@@ -1317,6 +1317,8 @@ class BlocksRepository {
     extras.segwitTotalSize = dbBlk.segwitTotalSize;
     extras.segwitTotalWeight = dbBlk.segwitTotalWeight;
     extras.header = dbBlk.header,
+    extras.headerVersion = Common.getBlockHeaderVersion(dbBlk.header);
+    extras.headerV2 = Common.getBlockHeaderV2Fields(dbBlk.header);
     extras.utxoSetChange = dbBlk.utxoSetChange;
     extras.utxoSetSize = dbBlk.utxoSetSize;
     extras.totalInputAmt = dbBlk.totalInputAmt;

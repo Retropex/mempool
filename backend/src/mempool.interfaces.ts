@@ -298,6 +298,15 @@ export const TransactionFlags = {
   sighash_acp:    0b00010000_00000000_00000000_00000000_00000000_00000000n,
 };
 
+export interface BlockHeaderV2 {
+  nonce2: number;
+  nonce3: number;
+  extranonce: string;
+  h1Flags: number;
+  xorKey: string;
+  xorKeyMaskClearBits: number;
+}
+
 export interface BlockExtension {
   totalFees: number;
   medianFee: number; // median fee rate
@@ -332,6 +341,8 @@ export interface BlockExtension {
   segwitTotalSize: number;
   segwitTotalWeight: number;
   header: string;
+  headerVersion?: number; // Block header format version (0 = legacy SHA256d, 2 = BLAKE2b header v2)
+  headerV2?: BlockHeaderV2 | null; // Additional fields present only in BLAKE2b header v2 blocks
   firstSeen: number | null;
   utxoSetChange: number;
   // Requires coinstatsindex, will be set to NULL otherwise

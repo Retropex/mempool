@@ -1,6 +1,6 @@
 import * as bitcoinjs from 'bitcoinjs-lib';
 import { Request } from 'express';
-import { EffectiveFeeStats, MempoolBlockWithTransactions, TransactionExtended, MempoolTransactionExtended, TransactionStripped, WorkingEffectiveFeeStats, TransactionClassified, TransactionFlags } from '../mempool.interfaces';
+import { EffectiveFeeStats, MempoolBlockWithTransactions, TransactionExtended, MempoolTransactionExtended, TransactionStripped, WorkingEffectiveFeeStats, TransactionClassified, TransactionFlags, BlockHeaderV2 } from '../mempool.interfaces';
 import config from '../config';
 import { NodeSocket } from '../repositories/NodesSocketsRepository';
 import { isIP } from 'net';
@@ -631,6 +631,38 @@ export class Common {
    */
   static isSignalingBIP110(version: number): boolean {
     return (version & (1 << BIP110_VERSION_BIT)) !== 0;
+  }
+
+  static getBlockHeaderVersion(header: string | null | undefined): number {
+    if (!header || header.length < 8) {
+      return 0;
+    }
+    // The first 4 bytes are the version, serialized little-endian
+    const version = parseInt(header.substring(6, 8) + header.substring(4, 6) + header.substring(2, 4) + header.substring(0, 2), 16);
+    return (version & 0x80000000) !== 0 ? 2 : 0;
+  }
+
+  /**
+   * Parse the BLAKE2b header v2 extra fields from the serialized header hex.
+   * Returns null for legacy (v0) headers.
+   */
+  static getBlockHeaderV2Fields(header: string | null | undefined): BlockHeaderV2 | null {
+    if (Common.getBlockHeaderVersion(header) !== 2 || !header || header.length < 328) {
+      return null;
+    }
+    // Read a little-endian 4-byte integer from an 8-char hex slice
+    const readLE32 = (hex: string): number => {
+      return parseInt(hex.substring(6, 8) + hex.substring(4, 6) + hex.substring(2, 4) + hex.substring(0, 2), 16);
+    };
+    // Offsets (in hex chars) follow the v2 header layout after the 80-byte base header (160 chars)
+    return {
+      nonce2: readLE32(header.substring(160, 168)),
+      nonce3: readLE32(header.substring(168, 176)),
+      extranonce: header.substring(176, 208),
+      xorKeyMaskClearBits: parseInt(header.substring(222, 224), 16),
+      h1Flags: parseInt(header.substring(220, 222), 16),
+      xorKey: header.substring(224, 256),
+    };
   }
 
   static getTransactionFlags(tx: TransactionExtended, height?: number): number {
