@@ -7,7 +7,7 @@ import cpfpRepository from '../repositories/CpfpRepository';
 import { RowDataPacket } from 'mysql2';
 
 class DatabaseMigration {
-  private static currentVersion = 113;
+  private static currentVersion = 114;
   private queryTimeout = 3600_000;
   private statisticsAddedIndexed = false;
   private uniqueLogs: string[] = [];
@@ -1255,15 +1255,21 @@ class DatabaseMigration {
       await this.$executeQuery('ALTER TABLE `compact_cpfp_clusters` ADD template_algo TINYINT UNSIGNED NOT NULL DEFAULT 0');
       await this.updateToSchemaVersion(111);
     }
-
-    if (databaseSchemaVersion < 112) {
-      await this.$executeQuery(this.getCreateFlagsValuesTableQuery(), await this.$checkIfTableExists('flag_values'));
+    
+    if (databaseSchemaVersion < 112 && isBitcoin === true) {
+      // Widen the header column to fit larger block headers (e.g. Bitcoin Knots v2 BLAKE2b headers)
+      await this.$executeQuery('ALTER TABLE `blocks` MODIFY `header` varchar(500) NOT NULL');
       await this.updateToSchemaVersion(112);
     }
 
     if (databaseSchemaVersion < 113) {
-      await this.$executeQuery('ALTER TABLE `blocks` ADD coinbase_bip_54 TINYINT(1) NULL DEFAULT NULL');
+      await this.$executeQuery(this.getCreateFlagsValuesTableQuery(), await this.$checkIfTableExists('flag_values'));
       await this.updateToSchemaVersion(113);
+    }
+
+    if (databaseSchemaVersion < 114) {
+      await this.$executeQuery('ALTER TABLE `blocks` ADD coinbase_bip_54 TINYINT(1) NULL DEFAULT NULL');
+      await this.updateToSchemaVersion(114);
     }
   }
 
