@@ -355,6 +355,36 @@
                   <td i18n="block.header">Block Header Hex</td>
                   <td><a target="_blank" href="{{ network === '' ? '' : '/' + network }}/api/block/{{block.id}}/header"><fa-icon [icon]="['fas', 'external-link-alt']" [fixedWidth]="true"></fa-icon></a></td>
                 </tr>
+                <ng-container *ngIf="block?.extras?.headerV2 as headerV2">
+                  <tr>
+                    <td i18n="block.header-version">Header version</td>
+                    <td>{{ block.extras.headerVersion }} <span class="badge bg-success ms-1" title="BLAKE2b proof-of-work header">BLAKE2b</span></td>
+                  </tr>
+                  <tr>
+                    <td i18n="block.nonce2">Nonce2</td>
+                    <td>{{ headerV2.nonce2 | decimal2hex }}</td>
+                  </tr>
+                  <tr>
+                    <td i18n="block.nonce3">Nonce3</td>
+                    <td>{{ headerV2.nonce3 | decimal2hex }}</td>
+                  </tr>
+                  <tr>
+                    <td i18n="block.extranonce">Extranonce</td>
+                    <td><p class="break-all">{{ headerV2.extranonce }}</p></td>
+                  </tr>
+                  <tr>
+                    <td i18n="block.h1-flags">H1 flags</td>
+                    <td>{{ headerV2.h1Flags }}</td>
+                  </tr>
+                  <tr>
+                    <td i18n="block.xor-key">XOR key</td>
+                    <td><p class="break-all">{{ headerV2.xorKey }}</p></td>
+                  </tr>
+                  <tr>
+                    <td i18n="block.xor-key-mask-clear-bits">XOR key mask clear bits</td>
+                    <td>{{ headerV2.xorKeyMaskClearBits }}</td>
+                  </tr>
+                </ng-container>
               </tbody>
             </table>
           </div>
