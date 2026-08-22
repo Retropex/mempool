@@ -7,7 +7,7 @@ import cpfpRepository from '../repositories/CpfpRepository';
 import { RowDataPacket } from 'mysql2';
 
 class DatabaseMigration {
-  private static currentVersion = 111;
+  private static currentVersion = 112;
   private queryTimeout = 3600_000;
   private statisticsAddedIndexed = false;
   private uniqueLogs: string[] = [];
@@ -1255,6 +1255,11 @@ class DatabaseMigration {
       await this.$executeQuery('ALTER TABLE `compact_cpfp_clusters` ADD template_algo TINYINT UNSIGNED NOT NULL DEFAULT 0');
       await this.updateToSchemaVersion(111);
     }
+
+    if (databaseSchemaVersion < 112 && isBitcoin === true) {
+      await this.$executeQuery('ALTER TABLE `blocks` MODIFY `header` varchar(512) NOT NULL');
+      await this.updateToSchemaVersion(112);
+    }
   }
 
   /**
@@ -1600,7 +1605,7 @@ class DatabaseMigration {
       ADD segwit_total_txs int unsigned NOT NULL,
       ADD segwit_total_size int unsigned NOT NULL,
       ADD segwit_total_weight int unsigned NOT NULL,
-      ADD header varchar(160) NOT NULL,
+      ADD header varchar(512) NOT NULL,
       ADD utxoset_change int NOT NULL,
       ADD utxoset_size int unsigned NULL,
       ADD total_input_amt bigint unsigned NULL
