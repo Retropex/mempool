@@ -954,6 +954,31 @@ export class Common {
     return Math.max(0, config.MEMPOOL.INDEXING_START_HEIGHT, tipHeight - indexingBlockAmount + 1);
   }
 
+  /**
+   * `height` floor predicate for the configured `INDEXING_START_HEIGHT`, with no
+   * leading conjunction, for queries that assemble their WHERE clause from a
+   * list of conditions. Empty string when no floor is configured.
+   *
+   * @param table optional table name to qualify the `height` column with
+   */
+  static blockFloorCondition(table: string = ''): string {
+    const floor = Math.max(0, Math.floor(Number(config.MEMPOOL.INDEXING_START_HEIGHT) || 0));
+    return floor > 0 ? `${table ? table + '.' : ''}height >= ${floor}` : '';
+  }
+
+  /**
+   * SQL fragment restricting a query to blocks at or above the configured
+   * `INDEXING_START_HEIGHT` floor, for appending to an existing WHERE clause.
+   * Returns an empty string when no floor is set, so queries are unchanged on
+   * default configs.
+   *
+   * @param table optional table name to qualify the `height` column with
+   */
+  static blockFloorSql(table: string = ''): string {
+    const condition = Common.blockFloorCondition(table);
+    return condition ? ` AND ${condition}` : '';
+  }
+
   static blocksSummariesIndexingEnabled(): boolean {
     return (
       Common.indexingEnabled() &&

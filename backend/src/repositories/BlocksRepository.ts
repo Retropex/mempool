@@ -316,7 +316,7 @@ class BlocksRepository {
     let query = `SELECT count(height) as count, pools.id as poolId
       FROM blocks
       JOIN pools on pools.id = blocks.pool_id
-      WHERE tx_count = 1 AND stale = 0`;
+      WHERE tx_count = 1 AND stale = 0${Common.blockFloorSql('blocks')}`;
 
     if (poolId) {
       query += ` AND pool_id = ?`;
@@ -362,7 +362,7 @@ class BlocksRepository {
     const params: any[] = [];
     let query = `SELECT count(height) as blockCount
       FROM blocks 
-      WHERE stale = 0`;
+      WHERE stale = 0${Common.blockFloorSql()}`;
 
     if (poolId) {
       query += ` AND pool_id = ?`;
@@ -396,7 +396,7 @@ class BlocksRepository {
       count(height) as blockCount,
       max(height) as lastBlockHeight
       FROM blocks
-      WHERE stale = 0`;
+      WHERE stale = 0${Common.blockFloorSql()}`;
 
     if (poolId) {
       query += ` AND pool_id = ?`;
@@ -443,7 +443,7 @@ class BlocksRepository {
       SELECT AVG(blocks_audits.match_rate) AS avg_match_rate
       FROM blocks
       JOIN blocks_audits ON blocks.height = blocks_audits.height
-      WHERE blocks.pool_id = ? AND stale = 0
+      WHERE blocks.pool_id = ? AND stale = 0${Common.blockFloorSql('blocks')}
     `;
     params.push(poolId);
 
@@ -468,7 +468,7 @@ class BlocksRepository {
     const query = `
       SELECT sum(reward) as total_reward
       FROM blocks
-      WHERE blocks.pool_id = ? AND stale = 0
+      WHERE blocks.pool_id = ? AND stale = 0${Common.blockFloorSql('blocks')}
     `;
     params.push(poolId);
 
@@ -491,7 +491,7 @@ class BlocksRepository {
   public async $oldestBlockTimestamp(): Promise<number> {
     const query = `SELECT UNIX_TIMESTAMP(blockTimestamp) as blockTimestamp
       FROM blocks
-      WHERE stale = 0
+      WHERE stale = 0${Common.blockFloorSql()}
       ORDER BY height
       LIMIT 1;`;
 
@@ -638,7 +638,7 @@ class BlocksRepository {
    */
   public async $getBlocksDifficulty(): Promise<object[]> {
     try {
-      const [rows]: any[] = await DB.query(`SELECT UNIX_TIMESTAMP(blockTimestamp) as time, height, difficulty, bits FROM blocks WHERE stale = 0 ORDER BY height ASC`);
+      const [rows]: any[] = await DB.query(`SELECT UNIX_TIMESTAMP(blockTimestamp) as time, height, difficulty, bits FROM blocks WHERE stale = 0${Common.blockFloorSql()} ORDER BY height ASC`);
       return rows;
     } catch (e) {
       logger.err('Cannot get blocks difficulty list from the db. Reason: ' + (e instanceof Error ? e.message : e));
@@ -688,7 +688,7 @@ class BlocksRepository {
         SELECT MIN(height) as startBlock, MAX(height) as endBlock, SUM(reward) as totalReward, SUM(fees) as totalFee, SUM(tx_count) as totalTx
         FROM
           (SELECT height, reward, fees, tx_count FROM blocks
-          WHERE stale = 0
+          WHERE stale = 0${Common.blockFloorSql()}
           ORDER by height DESC
           LIMIT ?) as sub`;
 
@@ -813,7 +813,7 @@ class BlocksRepository {
         FROM blocks
         JOIN blocks_prices on blocks_prices.height = blocks.height
         JOIN prices on prices.id = blocks_prices.price_id
-        WHERE stale = 0
+        WHERE stale = 0${Common.blockFloorSql('blocks')}
       `;
 
       if (interval !== null) {
@@ -846,7 +846,7 @@ class BlocksRepository {
         FROM blocks
         JOIN blocks_prices on blocks_prices.height = blocks.height
         JOIN prices on prices.id = blocks_prices.price_id
-        WHERE stale = 0
+        WHERE stale = 0${Common.blockFloorSql('blocks')}
       `;
 
       if (interval !== null) {
@@ -880,7 +880,7 @@ class BlocksRepository {
         CAST(AVG(JSON_EXTRACT(fee_span, '$[5]')) as INT) as avgFee_90,
         CAST(AVG(JSON_EXTRACT(fee_span, '$[6]')) as INT) as avgFee_100
       FROM blocks
-      WHERE stale = 0`;
+      WHERE stale = 0${Common.blockFloorSql()}`;
 
       if (interval !== null) {
         query += ` AND blockTimestamp BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`;
@@ -907,7 +907,7 @@ class BlocksRepository {
         CAST(AVG(UNIX_TIMESTAMP(blockTimestamp)) as INT) as timestamp,
         CAST(AVG(size) as INT) as avgSize
       FROM blocks
-      WHERE stale = 0`;
+      WHERE stale = 0${Common.blockFloorSql()}`;
 
       if (interval !== null) {
         query += ` AND blockTimestamp BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`;
@@ -934,7 +934,7 @@ class BlocksRepository {
         CAST(AVG(UNIX_TIMESTAMP(blockTimestamp)) as INT) as timestamp,
         CAST(AVG(weight) as INT) as avgWeight
       FROM blocks
-      WHERE stale = 0`;
+      WHERE stale = 0${Common.blockFloorSql()}`;
 
       if (interval !== null) {
         query += ` AND blockTimestamp BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`;
@@ -1001,7 +1001,7 @@ class BlocksRepository {
    */
   public async $getOldestConsecutiveBlock(): Promise<any> {
     try {
-      const [rows]: any = await DB.query(`SELECT height, UNIX_TIMESTAMP(blockTimestamp) as timestamp, difficulty, bits FROM blocks WHERE stale = 0 ORDER BY height DESC`);
+      const [rows]: any = await DB.query(`SELECT height, UNIX_TIMESTAMP(blockTimestamp) as timestamp, difficulty, bits FROM blocks WHERE stale = 0${Common.blockFloorSql()} ORDER BY height DESC`);
       for (let i = 0; i < rows.length - 1; ++i) {
         if (rows[i].height - rows[i + 1].height > 1) {
           return rows[i];

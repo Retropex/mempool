@@ -48,7 +48,7 @@ class PoolsRepository {
       FROM blocks
       JOIN pools on pools.id = pool_id
       LEFT JOIN blocks_audits ON blocks_audits.height = blocks.height
-      WHERE blocks.stale = 0
+      WHERE blocks.stale = 0${Common.blockFloorSql('blocks')}
     `;
 
     if (interval) {
@@ -75,7 +75,7 @@ class PoolsRepository {
     const query = `SELECT COUNT(height) as blockCount, pools.id as poolId, pools.name as poolName
       FROM pools
       LEFT JOIN blocks on pools.id = blocks.pool_id AND blocks.blockTimestamp BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)
-      WHERE blocks.stale = 0
+      WHERE blocks.stale = 0${Common.blockFloorSql('blocks')}
       GROUP BY pools.id`;
 
     try {

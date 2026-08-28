@@ -38,8 +38,16 @@ class DifficultyAdjustmentsRepository {
       CAST(AVG(adjustment) as DOUBLE) as adjustment
       FROM difficulty_adjustments`;
 
+    const conditions: string[] = [];
     if (interval) {
-      query += ` WHERE time BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`;
+      conditions.push(`time BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`);
+    }
+    const floorCondition = Common.blockFloorCondition();
+    if (floorCondition) {
+      conditions.push(floorCondition);
+    }
+    if (conditions.length) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     query += ` GROUP BY UNIX_TIMESTAMP(time) DIV ${86400}`;
@@ -69,8 +77,16 @@ class DifficultyAdjustmentsRepository {
       adjustment as adjustment
       FROM difficulty_adjustments`;
 
+    const conditions: string[] = [];
     if (interval) {
-      query += ` WHERE time BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`;
+      conditions.push(`time BETWEEN DATE_SUB(NOW(), INTERVAL ${interval}) AND NOW()`);
+    }
+    const floorCondition = Common.blockFloorCondition();
+    if (floorCondition) {
+      conditions.push(floorCondition);
+    }
+    if (conditions.length) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     if (descOrder === true) {
