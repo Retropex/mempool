@@ -191,7 +191,7 @@ export class Common {
     // heuristic to detect probable DER signatures
     return (w.length >= 18
       && w.startsWith('30') // minimum DER signature length is 8 bytes + sighash flag (see https://mempool.space/testnet/tx/c6c232a36395fa338da458b86ff1327395a9afc28c5d2daa4273e410089fd433)
-      && ['01', '02', '03', '81', '82', '83'].includes(w.slice(-2)) // signature must end with a valid sighash flag
+      && ['01', '02', '03', '21', '22', '23', '81', '82', '83', 'a1', 'a2', 'a3'].includes(w.slice(-2).toLowerCase()) // signature must end with a valid sighash flag
       && (w.length === (2 * parseInt(w.slice(2, 4), 16)) + 6) // second byte encodes the combined length of the R and S components
     );
   }
@@ -528,13 +528,19 @@ export class Common {
   }
 
   static setSighashFlags(flags: bigint, signature: string): bigint {
-    switch(signature.slice(-2)) {
+    switch(signature.slice(-2).toLowerCase()) {
       case '01': return flags | TransactionFlags.sighash_all;
       case '02': return flags | TransactionFlags.sighash_none;
       case '03': return flags | TransactionFlags.sighash_single;
+      case '21': return flags | TransactionFlags.sighash_all | TransactionFlags.sighash_unified;
+      case '22': return flags | TransactionFlags.sighash_none | TransactionFlags.sighash_unified;
+      case '23': return flags | TransactionFlags.sighash_single | TransactionFlags.sighash_unified;
       case '81': return flags | TransactionFlags.sighash_all | TransactionFlags.sighash_acp;
       case '82': return flags | TransactionFlags.sighash_none | TransactionFlags.sighash_acp;
       case '83': return flags | TransactionFlags.sighash_single | TransactionFlags.sighash_acp;
+      case 'a1': return flags | TransactionFlags.sighash_all | TransactionFlags.sighash_acp | TransactionFlags.sighash_unified;
+      case 'a2': return flags | TransactionFlags.sighash_none | TransactionFlags.sighash_acp | TransactionFlags.sighash_unified;
+      case 'a3': return flags | TransactionFlags.sighash_single | TransactionFlags.sighash_acp | TransactionFlags.sighash_unified;
       default: return flags | TransactionFlags.sighash_default; // taproot only
     }
   }
