@@ -985,6 +985,7 @@ class Blocks {
       let currentBlockHeight = blockchainInfo.blocks;
 
       const lastBlockToIndex = Common.getFirstIndexedHeight(currentBlockHeight);
+      const indexingBlockAmount = currentBlockHeight - lastBlockToIndex + 1;
 
       logger.debug(`Indexing blocks from #${currentBlockHeight} to #${lastBlockToIndex}`, logger.tags.mining);
       loadingIndicators.setProgress('block-indexing', 0);
