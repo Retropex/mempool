@@ -58,6 +58,7 @@ export const TransactionFlags = {
   sighash_single: 0b00000100_00000000_00000000_00000000_00000000_00000000n,
   sighash_default:0b00001000_00000000_00000000_00000000_00000000_00000000n,
   sighash_acp:    0b00010000_00000000_00000000_00000000_00000000_00000000n,
+  sighash_unified:0b00100000_00000000_00000000_00000000_00000000_00000000n,
 };
 
 export function toFlags(filters: string[]): bigint {
@@ -116,6 +117,7 @@ export const TransactionFilters: { [key: string]: Filter } = {
     sighash_single: { key: 'sighash_single', label: 'sighash_single', flag: TransactionFlags.sighash_single, tooltip: true },
     sighash_default: { key: 'sighash_default', label: 'sighash_default', flag: TransactionFlags.sighash_default },
     sighash_acp: { key: 'sighash_acp', label: 'sighash_anyonecanpay', flag: TransactionFlags.sighash_acp, tooltip: true },
+    sighash_unified: { key: 'sighash_unified', label: 'sighash_unified', flag: TransactionFlags.sighash_unified, tooltip: true },
 };
 
 export const FilterGroups: { label: string, filters: Filter[]}[] = [
@@ -124,5 +126,5 @@ export const FilterGroups: { label: string, filters: Filter[]}[] = [
   { label: $localize`Behavior`, filters: ['cpfp_parent', 'cpfp_child', 'replacement', 'acceleration'] },
   { label: $localize`Spam`, filters: ['op_return', 'fake_pubkey', 'fake_scripthash', 'inscription', 'annex', 'opnet'] },
   { label: $localize`Heuristics`, filters: ['coinjoin', 'consolidation', 'batch_payout'] },
-  { label: $localize`Sighash Flags`, filters: ['sighash_all', 'sighash_none', 'sighash_single', 'sighash_default', 'sighash_acp'] },
+  { label: $localize`Sighash Flags`, filters: ['sighash_all', 'sighash_none', 'sighash_single', 'sighash_default', 'sighash_acp', 'sighash_unified'] },
 ].map(group => ({ label: group.label, filters: group.filters.map(filter => TransactionFilters[filter] || null).filter(f => f != null) }));

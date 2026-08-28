@@ -2,25 +2,27 @@
 	cursor: pointer;
 	
 
+	// the UNIFIED opt-in doesn't change which inputs & outputs are signed,
+	// so opted-in flags share the color of their base type
 	&.sighash-0 {
 		--sigColor: var(--green);
 	}
-	&.sighash-1 {
+	&.sighash-1, &.sighash-33 {
 		--sigColor: var(--green);
 	}
-	&.sighash-2 {
+	&.sighash-2, &.sighash-34 {
 		--sigColor: gold;
 	}
-	&.sighash-3 {
+	&.sighash-3, &.sighash-35 {
 		--sigColor: cornflowerblue;
 	}
-	&.sighash-129 {
+	&.sighash-129, &.sighash-161 {
 		--sigColor: darkviolet;
 	}
-	&.sighash-130 {
+	&.sighash-130, &.sighash-162 {
 		--sigColor: darkorange;
 	}
-	&.sighash-131 {
+	&.sighash-131, &.sighash-163 {
 		--sigColor: var(--pink);
 	}
 	&.sig-no-lock {
