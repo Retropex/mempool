@@ -635,11 +635,7 @@ class Blocks {
     try {
       const blockchainInfo = await bitcoinClient.getBlockchainInfo();
       const currentBlockHeight = blockchainInfo.blocks;
-      let indexingBlockAmount = Math.min(config.MEMPOOL.INDEXING_BLOCKS_AMOUNT, currentBlockHeight);
-      if (indexingBlockAmount <= -1) {
-        indexingBlockAmount = currentBlockHeight + 1;
-      }
-      const lastBlockToIndex = Math.max(0, currentBlockHeight - indexingBlockAmount + 1);
+      const lastBlockToIndex = Common.getFirstIndexedHeight(currentBlockHeight);
 
       // Get all indexed block hash
       const indexedBlocks = (await blocksRepository.$getIndexedBlocks()).filter(block => block.height >= lastBlockToIndex);
@@ -988,12 +984,7 @@ class Blocks {
       const blockchainInfo = await bitcoinClient.getBlockchainInfo();
       let currentBlockHeight = blockchainInfo.blocks;
 
-      let indexingBlockAmount = Math.min(config.MEMPOOL.INDEXING_BLOCKS_AMOUNT, blockchainInfo.blocks);
-      if (indexingBlockAmount <= -1) {
-        indexingBlockAmount = currentBlockHeight + 1;
-      }
-
-      const lastBlockToIndex = Math.max(0, currentBlockHeight - indexingBlockAmount + 1);
+      const lastBlockToIndex = Common.getFirstIndexedHeight(currentBlockHeight);
 
       logger.debug(`Indexing blocks from #${currentBlockHeight} to #${lastBlockToIndex}`, logger.tags.mining);
       loadingIndicators.setProgress('block-indexing', 0);

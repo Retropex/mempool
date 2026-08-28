@@ -21,6 +21,7 @@ interface IConfig {
     INITIAL_BLOCKS_AMOUNT: number;
     MEMPOOL_BLOCKS_AMOUNT: number;
     INDEXING_BLOCKS_AMOUNT: number;
+    INDEXING_START_HEIGHT: number;
     BLOCKS_SUMMARIES_INDEXING: boolean;
     GOGGLES_INDEXING: boolean;
     USE_SECOND_NODE_FOR_MINFEE: boolean;
@@ -194,6 +195,7 @@ const defaults: IConfig = {
     'INITIAL_BLOCKS_AMOUNT': 8,
     'MEMPOOL_BLOCKS_AMOUNT': 8,
     'INDEXING_BLOCKS_AMOUNT': 11000, // 0 = disable indexing, -1 = index all blocks
+    'INDEXING_START_HEIGHT': 0, // never index below this height, even if INDEXING_BLOCKS_AMOUNT reaches further back
     'BLOCKS_SUMMARIES_INDEXING': false,
     'GOGGLES_INDEXING': false,
     'USE_SECOND_NODE_FOR_MINFEE': false,

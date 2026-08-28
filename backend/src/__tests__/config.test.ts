@@ -33,6 +33,7 @@ describe('Mempool Backend Config', () => {
         INITIAL_BLOCKS_AMOUNT: 8,
         MEMPOOL_BLOCKS_AMOUNT: 8,
         INDEXING_BLOCKS_AMOUNT: 11000,
+        INDEXING_START_HEIGHT: 0,
         USE_SECOND_NODE_FOR_MINFEE: false,
         EXTERNAL_ASSETS: [],
         EXTERNAL_MAX_RETRY: 1,

@@ -412,7 +412,7 @@ class Mining {
       }
 
       // Add genesis block manually
-      if (config.MEMPOOL.INDEXING_BLOCKS_AMOUNT === -1 && !indexedTimestamp.includes(genesisTimestamp / 1000)) {
+      if (config.MEMPOOL.INDEXING_BLOCKS_AMOUNT === -1 && config.MEMPOOL.INDEXING_START_HEIGHT === 0 && !indexedTimestamp.includes(genesisTimestamp / 1000)) {
         hashrates.push({
           hashrateTimestamp: genesisTimestamp / 1000,
           avgHashrate: await bitcoinClient.getNetworkHashPs(1, 1),
@@ -464,7 +464,7 @@ class Mining {
     let currentBits = genesisData.bits;
     let totalIndexed = 0;
 
-    if (config.MEMPOOL.INDEXING_BLOCKS_AMOUNT === -1 && indexedHeights[0] !== true) {
+    if (config.MEMPOOL.INDEXING_BLOCKS_AMOUNT === -1 && config.MEMPOOL.INDEXING_START_HEIGHT === 0 && indexedHeights[0] !== true) {
       await DifficultyAdjustmentsRepository.$saveAdjustments({
         time: genesisData.timestamp,
         height: 0,

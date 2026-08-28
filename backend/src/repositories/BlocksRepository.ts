@@ -752,6 +752,7 @@ class BlocksRepository {
       if (indexedBlockAmount > 0) {
         lastIndexedBlockHeight = Math.max(0, tipHeight - indexedBlockAmount + 1);
       }
+      lastIndexedBlockHeight = Math.max(lastIndexedBlockHeight, config.MEMPOOL.INDEXING_START_HEIGHT);
 
 
       for (let height = tipHeight; height > lastIndexedBlockHeight; height--) {
@@ -972,11 +973,7 @@ class BlocksRepository {
     try {
       const blockchainInfo = await bitcoinClient.getBlockchainInfo();
       const currentBlockHeight = blockchainInfo.blocks;
-      let indexingBlockAmount = Math.min(config.MEMPOOL.INDEXING_BLOCKS_AMOUNT, currentBlockHeight);
-      if (indexingBlockAmount <= -1) {
-        indexingBlockAmount = currentBlockHeight + 1;
-      }
-      const minHeight = Math.max(0, currentBlockHeight - indexingBlockAmount + 1);
+      const minHeight = Common.getFirstIndexedHeight(currentBlockHeight);
 
       const [rows] = await DB.query(`
         SELECT height

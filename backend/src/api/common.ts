@@ -940,6 +940,20 @@ export class Common {
     );
   }
 
+  /**
+   * Lowest block height that should be indexed, given the current chain tip.
+   *
+   * Combines the rolling `INDEXING_BLOCKS_AMOUNT` window with the fixed
+   * `INDEXING_START_HEIGHT` floor, so indexing never reaches below that height.
+   */
+  static getFirstIndexedHeight(tipHeight: number): number {
+    let indexingBlockAmount = Math.min(config.MEMPOOL.INDEXING_BLOCKS_AMOUNT, tipHeight);
+    if (indexingBlockAmount <= -1) {
+      indexingBlockAmount = tipHeight + 1;
+    }
+    return Math.max(0, config.MEMPOOL.INDEXING_START_HEIGHT, tipHeight - indexingBlockAmount + 1);
+  }
+
   static blocksSummariesIndexingEnabled(): boolean {
     return (
       Common.indexingEnabled() &&

@@ -50,6 +50,7 @@ class ChainTips {
       if (indexedBlockAmount > 0) {
         minIndexHeight = Math.max(0, activeTipHeight - indexedBlockAmount + 1);
       }
+      minIndexHeight = Math.max(minIndexHeight, config.MEMPOOL.INDEXING_START_HEIGHT);
 
       const start = Date.now();
       const breakAt = start + 10000;
