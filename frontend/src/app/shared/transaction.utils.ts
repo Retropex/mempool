@@ -87,7 +87,7 @@ export function isDERSig(w: string): boolean {
   // heuristic to detect probable DER signatures
   return (w.length >= 18
     && w.startsWith('30') // minimum DER signature length is 8 bytes + sighash flag (see https://mempool.space/testnet/tx/c6c232a36395fa338da458b86ff1327395a9afc28c5d2daa4273e410089fd433)
-    && ['01', '02', '03', '81', '82', '83'].includes(w.slice(-2)) // signature must end with a valid sighash flag
+    && ['01', '02', '03', '21', '22', '23', '81', '82', '83', 'a1', 'a2', 'a3'].includes(w.slice(-2).toLowerCase()) // signature must end with a valid sighash flag
     && (w.length === (2 * parseInt(w.slice(2, 4), 16)) + 6) // second byte encodes the combined length of the R and S components
   );
 }
@@ -145,27 +145,36 @@ export enum SighashFlag {
   ALL = 1,
   NONE = 2,
   SINGLE = 3,
+  UNIFIED = 0x20,
   ANYONECANPAY = 0x80
 }
+
+// the low 5 bits of a hash type byte select which outputs are signed
+const SIGHASH_OUTPUT_MASK = 0x1f;
 
 export type SighashValue =
   SighashFlag.DEFAULT |
   SighashFlag.ALL |
   SighashFlag.NONE |
   SighashFlag.SINGLE |
-  (SighashFlag.ALL & SighashFlag.ANYONECANPAY) |
-  (SighashFlag.NONE & SighashFlag.ANYONECANPAY) |
-  (SighashFlag.SINGLE & SighashFlag.ANYONECANPAY) |
-  (SighashFlag.ALL & SighashFlag.NONE);
+  0x21 | 0x22 | 0x23 | // ALL | NONE | SINGLE, each with UNIFIED
+  0x81 | 0x82 | 0x83 | // ALL | NONE | SINGLE, each with ANYONECANPAY
+  0xa1 | 0xa2 | 0xa3;  // ALL | NONE | SINGLE, each with ANYONECANPAY and UNIFIED
 
 export const SighashLabels: Record<number, string> = {
   '0': 'SIGHASH_DEFAULT',
   '1': 'SIGHASH_ALL',
   '2': 'SIGHASH_NONE',
   '3': 'SIGHASH_SINGLE',
+  '33': 'SIGHASH_ALL | UNIFIED',
+  '34': 'SIGHASH_NONE | UNIFIED',
+  '35': 'SIGHASH_SINGLE | UNIFIED',
   '129': 'SIGHASH_ALL | ACP',
   '130': 'SIGHASH_NONE | ACP',
   '131': 'SIGHASH_SINGLE | ACP',
+  '161': 'SIGHASH_ALL | ACP | UNIFIED',
+  '162': 'SIGHASH_NONE | ACP | UNIFIED',
+  '163': 'SIGHASH_SINGLE | ACP | UNIFIED',
 };
 
 export interface SigInfo {
@@ -175,19 +184,23 @@ export interface SigInfo {
 
 export class Sighash {
   static isACP(val: SighashValue): boolean {
-    return val >= SighashFlag.ANYONECANPAY;
+    return (val & SighashFlag.ANYONECANPAY) !== 0;
+  }
+
+  static isUnified(val: SighashValue): boolean {
+    return (val & SighashFlag.UNIFIED) !== 0;
   }
 
   static isNone(val: SighashValue): boolean {
-    return (val & 0x7F) === SighashFlag.NONE;
+    return (val & SIGHASH_OUTPUT_MASK) === SighashFlag.NONE;
   }
 
   static isSingle(val: SighashValue): boolean {
-    return (val & 0x7F) === SighashFlag.SINGLE;
+    return (val & SIGHASH_OUTPUT_MASK) === SighashFlag.SINGLE;
   }
 
   static isAll(val: SighashValue): boolean {
-    return (val & 0x7F) === SighashFlag.ALL;
+    return (val & SIGHASH_OUTPUT_MASK) === SighashFlag.ALL;
   }
 
   static isDefault(val: SighashValue): boolean {
@@ -196,7 +209,11 @@ export class Sighash {
 }
 
 export function decodeSighashFlag(sighash: number): SighashValue {
-  if (sighash >= 0 && sighash <= 0x03 || sighash > 0x80 && sighash <= 0x83) {
+  if (sighash >= 0 && sighash <= 0x03 // DEFAULT, ALL, NONE, SINGLE
+    || sighash > 0x20 && sighash <= 0x23 // ... | UNIFIED
+    || sighash > 0x80 && sighash <= 0x83 // ... | ACP
+    || sighash > 0xa0 && sighash <= 0xa3 // ... | ACP | UNIFIED
+  ) {
     return sighash as SighashValue;
   }
   return SighashFlag.DEFAULT;
@@ -776,13 +793,19 @@ export function setLegacySighashFlags(flags: bigint, scriptsig_asm: string): big
 }
 
 export function setSighashFlags(flags: bigint, signature: string): bigint {
-  switch(signature.slice(-2)) {
+  switch(signature.slice(-2).toLowerCase()) {
     case '01': return flags | TransactionFlags.sighash_all;
     case '02': return flags | TransactionFlags.sighash_none;
     case '03': return flags | TransactionFlags.sighash_single;
+    case '21': return flags | TransactionFlags.sighash_all | TransactionFlags.sighash_unified;
+    case '22': return flags | TransactionFlags.sighash_none | TransactionFlags.sighash_unified;
+    case '23': return flags | TransactionFlags.sighash_single | TransactionFlags.sighash_unified;
     case '81': return flags | TransactionFlags.sighash_all | TransactionFlags.sighash_acp;
     case '82': return flags | TransactionFlags.sighash_none | TransactionFlags.sighash_acp;
     case '83': return flags | TransactionFlags.sighash_single | TransactionFlags.sighash_acp;
+    case 'a1': return flags | TransactionFlags.sighash_all | TransactionFlags.sighash_acp | TransactionFlags.sighash_unified;
+    case 'a2': return flags | TransactionFlags.sighash_none | TransactionFlags.sighash_acp | TransactionFlags.sighash_unified;
+    case 'a3': return flags | TransactionFlags.sighash_single | TransactionFlags.sighash_acp | TransactionFlags.sighash_unified;
     default: return flags | TransactionFlags.sighash_default; // taproot only
   }
 }
