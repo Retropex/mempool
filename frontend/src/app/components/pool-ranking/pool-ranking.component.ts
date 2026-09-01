@@ -125,11 +125,11 @@ export class PoolRankingComponent implements OnInit, OnChanges {
   }
 
   generatePoolsChartSerieData(miningStats) {
-    let poolShareThreshold = 0.5;
+    let poolShareThreshold = 0;
     if (isMobile()) {
-      poolShareThreshold = 2;
+      poolShareThreshold = 0;
     } else if (this.widget) {
-      poolShareThreshold = 1;
+      poolShareThreshold = 0;
     }
 
     let pools = miningStats.pools;
