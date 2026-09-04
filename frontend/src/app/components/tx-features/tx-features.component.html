@@ -28,3 +28,9 @@
 <span *ngIf="isRbfTransaction; else rbfDisabled" class="badge bg-success" i18n-ngbTooltip="RBF tooltip" ngbTooltip="This transaction supports Replace-By-Fee (RBF) allowing fee bumping" placement="bottom" i18n="tx-features.tag.rbf|RBF">RBF</span>
 <ng-template #rbfDisabled><span class="badge bg-danger me-1" i18n-ngbTooltip="RBF disabled tooltip" ngbTooltip="This transaction does NOT support Replace-By-Fee (RBF) and cannot be fee bumped using this method" placement="bottom"><del i18n="tx-features.tag.rbf|RBF">RBF</del></span></ng-template>
 </ng-template>
+
+<ng-template [ngIf]="unifiedEnabled">
+<span *ngIf="replayProtection === 'all'" class="badge bg-success ms-1" ngbTooltip="Every input is signed with the unified opt-in sighash (SIGHASH_UNIFIED, 0x20). Nodes without the BLAKE2b hardfork cannot verify these signatures, so this transaction cannot be replayed onto the SHA256d chain." placement="bottom">Replay protected</span>
+<span *ngIf="replayProtection === 'partial'" class="badge bg-warning ms-1" ngbTooltip="Some inputs are signed with the unified opt-in sighash and some are not. The transaction as a whole cannot be replayed, but the legacy-signed inputs offer no protection on their own." placement="bottom">Replay protected (partial)</span>
+<span *ngIf="replayProtection === 'none'" class="badge bg-danger ms-1" ngbTooltip="No input is signed with the unified opt-in sighash. This transaction is valid on both chains and can be replayed onto the SHA256d chain by anyone." placement="bottom"><del>Replay protected</del></span>
+</ng-template>
