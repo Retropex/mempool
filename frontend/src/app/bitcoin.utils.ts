@@ -266,6 +266,7 @@ const featureActivation = {
     rbf: 399701,
     segwit: 477120,
     taproot: 709632,
+    unified: 961640,
   },
   testnet: {
     rbf: 720255,
@@ -276,6 +277,7 @@ const featureActivation = {
     rbf: 0,
     segwit: 0,
     taproot: 0,
+    unified: 150308,
   },
   signet: {
     rbf: 0,
@@ -284,7 +286,7 @@ const featureActivation = {
   },
 };
 
-export function isFeatureActive(network: string, height: number, feature: 'rbf' | 'segwit' | 'taproot'): boolean {
+export function isFeatureActive(network: string, height: number, feature: 'rbf' | 'segwit' | 'taproot' | 'unified'): boolean {
   const activationHeight = featureActivation[network || 'mainnet']?.[feature];
   if (activationHeight != null) {
     return height >= activationHeight;
