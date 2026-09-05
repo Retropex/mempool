@@ -90,11 +90,15 @@ class FeeApi {
 
   private optimizeMedianFee(pBlock: MempoolBlock, nextBlock: MempoolBlock | undefined, previousFee: number | undefined, minFee: number, minIncrement: number = this.minimumIncrement): number {
     const useFee = previousFee ? (pBlock.medianFee + previousFee) / 2 : pBlock.medianFee;
-    if (pBlock.blockVSize <= 500000 || pBlock.medianFee < minFee) {
+    // Thresholds follow the configured block size; at the 4,000,000 WU default
+    // they are the historical 500,000 and 950,000 vsize.
+    const blockVSize = config.MEMPOOL.BLOCK_WEIGHT_UNITS / 4;
+    const halfBlockVSize = blockVSize / 2;
+    if (pBlock.blockVSize <= halfBlockVSize || pBlock.medianFee < minFee) {
       return minFee;
     }
-    if (pBlock.blockVSize <= 950000 && !nextBlock) {
-      const multiplier = (pBlock.blockVSize - 500000) / 500000;
+    if (pBlock.blockVSize <= blockVSize * 0.95 && !nextBlock) {
+      const multiplier = (pBlock.blockVSize - halfBlockVSize) / halfBlockVSize;
       return Math.max(this.roundToNearest(useFee * multiplier, minIncrement), minFee);
     }
     return Math.max(this.roundUpToNearest(useFee, minIncrement), minFee);
