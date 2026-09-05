@@ -257,6 +257,11 @@ export const specialBlocks = {
     labelEventCompleted: 'Taproot 🌱 has been activated!',
     networks: ['mainnet'],
   },
+  '961640': {
+    labelEvent: 'BLAKE2b POW change activation ⛏️',
+    labelEventCompleted: 'BLAKE2b POW change has been activated! ⛏️',
+    networks: ['mainnet'],
+  },
   '840000': {
     labelEvent: 'Bitcoin\'s 4th Halving',
     labelEventCompleted: 'Block Subsidy has halved to 3.125 BTC per block',
