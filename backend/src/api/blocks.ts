@@ -359,7 +359,7 @@ class Blocks {
           minerNames: null,
         };
 
-        if (extras.pool.name === 'OCEAN') {
+        if (['OCEAN', 'CONVOY'].includes(extras.pool.name)) {
           extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
         }
       }
