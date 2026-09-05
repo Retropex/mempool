@@ -17,7 +17,8 @@ export interface ChainTip {
 
 export interface StaleTip extends ChainTip {
   stale: BlockExtended;
-  canonical: BlockExtended;
+  // absent when the stale block sits above the active tip, where no canonical block exists
+  canonical?: BlockExtended;
 }
 
 export interface OrphanedBlock {
@@ -34,6 +35,7 @@ class ChainTips {
   private blockCache: { [hash: string]: OrphanedBlock } = {};
   private orphansByHeight: { [height: number]: OrphanedBlock[] } = {};
   private indexingOrphanedBlocks = false;
+  private activeTipHeight = 0;
   private indexingQueue: { blockhash?: string, block?: IEsploraApi.Block, tip: OrphanedBlock }[] = [];
 
   private staleTipsCacheSize = 50;
@@ -45,6 +47,7 @@ class ChainTips {
       this.chainTips = await bitcoinClient.getChainTips();
 
       const activeTipHeight = this.chainTips.find(tip => tip.status === 'active')?.height || (await bitcoinApi.$getBlockHeightTip());
+      this.activeTipHeight = activeTipHeight;
       let minIndexHeight = 0;
       const indexedBlockAmount = Math.min(config.MEMPOOL.INDEXING_BLOCKS_AMOUNT, activeTipHeight);
       if (indexedBlockAmount > 0) {
@@ -168,7 +171,11 @@ class ChainTips {
         }
 
         if (staleBlock && needToCache) {
-          const canonicalBlock = await blocks.$indexBlockByHeight(staleBlock.height);
+          // A valid-fork can reach above the active tip (more blocks, less work);
+          // there is no canonical block at those heights and getblockhash throws
+          const canonicalBlock = staleBlock.height <= this.activeTipHeight
+            ? await blocks.$indexBlockByHeight(staleBlock.height)
+            : undefined;
           this.staleTips[staleBlock.height] = {
             height: staleBlock.height,
             hash: staleBlock.id,
