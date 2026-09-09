@@ -14,7 +14,7 @@ class PoolsRepository {
    * @asyncUnsafe
    */
   public async $getPools(): Promise<PoolTag[]> {
-    const [rows] = await DB.query('SELECT id, unique_id as uniqueId, name, addresses, regexes, slug FROM pools');
+    const [rows] = await DB.query('SELECT id, unique_id as uniqueId, name, addresses, regexes, slug, datum FROM pools');
     return <PoolTag[]>rows;
   }
 
@@ -233,8 +233,8 @@ class PoolsRepository {
     try {
       await DB.query(`
         INSERT INTO pools
-        SET name = ?, link = ?, addresses = ?, regexes = ?, slug = ?, unique_id = ?`,
-        [pool.name, pool.link, JSON.stringify(pool.addresses), JSON.stringify(pool.regexes), slug, pool.id]
+        SET name = ?, link = ?, addresses = ?, regexes = ?, slug = ?, unique_id = ?, datum = ?`,
+        [pool.name, pool.link, JSON.stringify(pool.addresses), JSON.stringify(pool.regexes), slug, pool.id, pool.datum ? 1 : 0]
       );
     } catch (e: any) {
       logger.err(`Cannot insert new mining pool into db. Reason: ` + (e instanceof Error ? e.message : e));
@@ -301,6 +301,26 @@ class PoolsRepository {
       );
     } catch (e: any) {
       logger.err(`Cannot update mining pool id ${dbId}. Reason: ` + (e instanceof Error ? e.message : e));
+    }
+  }
+
+  /**
+   * Update whether an existing mining pool builds its templates with DATUM
+   *
+   * @param dbId
+   * @param datum
+   * @asyncSafe
+   */
+  public async $updateMiningPoolDatum(dbId: number, datum: boolean): Promise<void> {
+    try {
+      await DB.query(`
+        UPDATE pools
+        SET datum = ?
+        WHERE id = ?`,
+        [datum ? 1 : 0, dbId]
+      );
+    } catch (e: any) {
+      logger.err(`Cannot update DATUM flag for mining pool id ${dbId}. Reason: ` + (e instanceof Error ? e.message : e));
     }
   }
 

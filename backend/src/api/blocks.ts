@@ -363,7 +363,7 @@ class Blocks {
           minerNames: null,
         };
 
-        if (extras.pool.name === 'OCEAN') {
+        if (pool.datum) {
           extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
         } else if (extras.pool.name === 'DMND') {
           extras.pool.minerNames = parseDMNDTemplateCreator(extras.coinbaseRaw);
