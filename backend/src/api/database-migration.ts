@@ -7,7 +7,7 @@ import cpfpRepository from '../repositories/CpfpRepository';
 import { RowDataPacket } from 'mysql2';
 
 class DatabaseMigration {
-  private static currentVersion = 112;
+  private static currentVersion = 113;
   private queryTimeout = 3600_000;
   private statisticsAddedIndexed = false;
   private uniqueLogs: string[] = [];
@@ -1260,6 +1260,11 @@ class DatabaseMigration {
       // Widen the header column to fit larger block headers (e.g. Bitcoin Knots v2 BLAKE2b headers)
       await this.$executeQuery('ALTER TABLE `blocks` MODIFY `header` varchar(500) NOT NULL');
       await this.updateToSchemaVersion(112);
+    }
+
+    if (databaseSchemaVersion < 113) {
+      await this.$executeQuery('ALTER TABLE `pools` ADD datum TINYINT(1) NOT NULL DEFAULT 0');
+      await this.updateToSchemaVersion(115);
     }
   }
 

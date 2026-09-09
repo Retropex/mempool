@@ -25,7 +25,9 @@ class PoolsParser {
     for (const pool of pools) {
       pool.regexes = pool.tags;
       pool.slug = pool.name.replace(/[^a-z0-9]/gi, '').toLowerCase();
+      pool.datum = pool.DATUM === true; // the DATUM key is absent for non-DATUM pools
       delete(pool.tags);
+      delete(pool.DATUM);
     }
     this.miningPools = pools;
   }
@@ -105,6 +107,12 @@ class PoolsParser {
           reindexUnknown = true;
           clearCache = true;
           await this.$reindexBlocksForPool(poolDB.id);
+        }
+        if (!!poolDB.datum !== pool.datum) {
+          // Pool DATUM status changed
+          logger.debug(`Updating DATUM flag for ${pool.name} mining pool`);
+          await PoolsRepository.$updateMiningPoolDatum(poolDB.id, pool.datum);
+          clearCache = true;
         }
       }
     }

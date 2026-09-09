@@ -10,6 +10,7 @@ export interface PoolTag {
   regexes: string; // JSON array
   addresses: string; // JSON array
   slug: string;
+  datum?: boolean;
 }
 
 export interface PoolInfo {
