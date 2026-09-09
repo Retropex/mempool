@@ -11,6 +11,7 @@ import { faFilter, faAngleDown, faAngleUp, faAngleRight, faAngleLeft, faBolt, fa
   faMedal, faBug, faFilePdf, faPiggyBank, faLayerGroup, faHeart, faCashRegister, faCodeFork, faCode, 
   faCalendar, faPause, faPlay, faExpand, faCompress} from '@fortawesome/free-solid-svg-icons';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { MenuComponent } from '@components/menu/menu.component';
 import { PreviewTitleComponent } from '@components/master-page-preview/preview-title.component';
 import { VbytesPipe } from '@app/shared/pipes/bytes-pipe/vbytes.pipe';
@@ -275,6 +276,7 @@ import { GithubLogin } from '@components/github-login.component/github-login.com
     NgbDatepickerModule,
     InfiniteScrollModule,
     FontAwesomeModule,
+    NgxEchartsModule,
   ],
   providers: [
     BytesPipe,
@@ -299,6 +301,7 @@ import { GithubLogin } from '@components/github-login.component/github-login.com
     NgbCollapseModule,
     InfiniteScrollModule,
     FontAwesomeModule,
+    NgxEchartsModule,
     TimeComponent,
     ClipboardComponent,
     QrcodeComponent,
