@@ -33,6 +33,12 @@ const MAX_TRANSACTION_TIMES = 100;
 const JUST_NUMBERS_REGEX = /^[1-9]\d*$/;
 
 class BitcoinRoutes {
+  private bitnodesCache: {
+    data: any;
+    lastUpdated: number;
+  } | null = null;
+  private readonly BITNODES_CACHE_DURATION = 120 * 60 * 1000;
+
   public initRoutes(app: Application) {
     app
       .get(config.MEMPOOL.API_URL_PREFIX + 'transaction-times', this.getTransactionTimes)
@@ -45,6 +51,7 @@ class BitcoinRoutes {
       .get(config.MEMPOOL.API_URL_PREFIX + 'backend-info', this.getBackendInfo)
       .get(config.MEMPOOL.API_URL_PREFIX + 'init-data', this.getInitData)
       .get(config.MEMPOOL.API_URL_PREFIX + 'validate-address/:address', this.validateAddress)
+      .get(config.MEMPOOL.API_URL_PREFIX + 'bitnodes/knots-stats', this.getBitnodesKnotsStats.bind(this))
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/rbf', this.getRbfHistory)
       .get(config.MEMPOOL.API_URL_PREFIX + 'tx/:txId/cached', this.getCachedTx)
       .get(config.MEMPOOL.API_URL_PREFIX + 'replacements', this.getRbfReplacements)
@@ -310,6 +317,87 @@ class BitcoinRoutes {
 
   private getBackendInfo(req: Request, res: Response) {
     res.json(backendInfo.getBackendInfo());
+  }
+
+  private async getBitnodesKnotsStats(req: Request, res: Response) {
+    try {
+      const now = Date.now();
+      if (this.bitnodesCache &&
+          this.bitnodesCache.lastUpdated &&
+          (now - this.bitnodesCache.lastUpdated) < this.BITNODES_CACHE_DURATION) {
+        logger.debug('Serving Bitcoin Knots nodes stats from cache');
+        res.json(this.bitnodesCache.data);
+        return;
+      }
+
+      logger.debug('Fetching fresh Bitcoin Knots nodes stats from seed.txt');
+      const response = await axios.get('https://haf.ovh/seed.txt', {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mempool.space/1.0'
+        },
+        responseType: 'text'
+      });
+
+      const lines: string[] = (response.data as string).split('\n');
+      let totalBitcoinNodes = 0;
+      let totalKnotsNodes = 0;
+      let ipv4Nodes = 0;
+      let ipv6Nodes = 0;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#') || trimmed === '...') continue;
+
+        // Process user agent when found (quoted string starting with /)
+        const uaMatch = trimmed.match(/"(\/[^"]*)"/);
+        if (uaMatch) {
+          totalBitcoinNodes++;
+          const ua = uaMatch[1].toLowerCase();
+          if (ua.includes('knots')) {
+            totalKnotsNodes++;
+            // Detect IPv6 by bracket notation [::] or plain hex:colon address before port
+            const isIPv6 = trimmed.startsWith('[') || /^[0-9a-fA-F]{0,4}(:[0-9a-fA-F]{0,4}){2,}/.test(trimmed);
+            if (isIPv6) {
+              ipv6Nodes++;
+            } else {
+              ipv4Nodes++;
+            }
+          }
+        }
+      }
+
+      const knotsPercentageOfTotal = totalBitcoinNodes > 0 ? (totalKnotsNodes / totalBitcoinNodes) * 100 : 0;
+
+      const result = {
+        countries: [],
+        totals: {
+          totalNodes: totalKnotsNodes,
+          ipv4Nodes: ipv4Nodes,
+          ipv6Nodes: ipv6Nodes,
+          clearnetNodes: totalKnotsNodes,
+          torNodes: 0,
+          totalBitcoinNodes: totalBitcoinNodes,
+          percentageOfTotal: knotsPercentageOfTotal
+        }
+      };
+
+      this.bitnodesCache = {
+        data: result,
+        lastUpdated: now
+      };
+
+      logger.debug(`Cached Bitcoin Knots nodes stats: ${totalKnotsNodes} nodes (${knotsPercentageOfTotal.toFixed(2)}% of ${totalBitcoinNodes} total Bitcoin nodes)`);
+      res.json(result);
+    } catch (error) {
+      logger.err(`Error fetching Bitnodes data: ${error}`);
+      if (this.bitnodesCache && this.bitnodesCache.data) {
+        logger.warn('Serving expired cached data due to API error');
+        res.json(this.bitnodesCache.data);
+        return;
+      }
+      handleError(req, res, 500, 'Failed to fetch Bitcoin Knots nodes statistics');
+    }
   }
 
   private async getTransaction(req: Request, res: Response) {

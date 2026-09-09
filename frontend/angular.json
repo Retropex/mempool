@@ -244,14 +244,17 @@
             },
             "local": {
               "proxyConfig": "proxy.conf.local.js",
+              "host": "0.0.0.0",
               "verbose": true
             },
             "local-esplora": {
               "proxyConfig": "proxy.conf.local-esplora.js",
+              "host": "0.0.0.0",
               "verbose": true
             },
             "mixed": {
               "proxyConfig": "proxy.conf.mixed.js",
+              "host": "0.0.0.0",
               "verbose": true
             },
             "local-prod": {

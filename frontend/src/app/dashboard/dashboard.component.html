@@ -62,6 +62,26 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Knots Progress + Ocean and Knots Section-->
+  <div *ngIf="stateService.network === ''">
+    <div class="col knots-progress-fullwidth-container">
+      <div class="knots-progress-wrapper">
+        <div class="progress-header">
+          <h6 class="progress-title" i18n="knots.network-distribution">Bitcoin Knots Network Distribution</h6>
+          <span class="progress-percentage">{{ knotsPercentage?.toFixed(2) || '0.00' }}%</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bg">
+            <div class="progress-fill" [style.width.%]="knotsPercentage || 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2">
     <div class="col" style="max-height: 410px">
       <div class="card" *ngIf="(network$ | async) !== 'liquidtestnet'; else latestBlocks">
         <div class="card-body">
