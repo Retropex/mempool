@@ -12136,7 +12136,7 @@ export const restApiDocsData = [
       Filters can be applied:<ul>
       <li><code>status</code>: <code>all</code>, <code>requested</code>, <code>accelerating</code>, <code>mined</code>, <code>completed</code>, <code>failed</code></li>
       <li><code>timeframe</code>: <code>24h</code>, <code>3d</code>, <code>1w</code>, <code>1m</code>, <code>3m</code>, <code>6m</code>, <code>1y</code>, <code>2y</code>, <code>3y</code>, <code>4y</code>, <code>all</code></li>
-      <li><code>minedByPoolUniqueId</code>: any id from <a target="_blank" href="https://github.com/mempool/mining-pools/blob/master/pools-v2.json">pools-v2.json</a></li>
+      <li><code>minedByPoolUniqueId</code>: any id from <a target="_blank" href="https://github.com/retropex/mining-pools/blob/master/pools-v2.json">pools-v2.json</a></li>
       <li><code>blockHash</code>: a block hash</li>
       <li><code>blockHeight</code>: a block height</li>
       <li><code>page</code>: the requested page number if using pagination <i>(min: 1)</i></li>
@@ -12195,7 +12195,7 @@ export const restApiDocsData = [
       default: `<p>Aggregated statistics for transaction accelerations, with optional filtering by pool, block, or time range.
       Filters can be applied:<ul>
       <li><code>timeframe</code>: <code>24h</code>, <code>3d</code>, <code>1w</code>, <code>1m</code>, <code>3m</code>, <code>6m</code>, <code>1y</code>, <code>2y</code>, <code>3y</code>, <code>4y</code>, <code>all</code></li>
-      <li><code>poolUniqueId</code>: any id from <a target="_blank" href="https://github.com/mempool/mining-pools/blob/master/pools-v2.json">pools-v2.json</a></li>
+      <li><code>poolUniqueId</code>: any id from <a target="_blank" href="https://github.com/retropex/mining-pools/blob/master/pools-v2.json">pools-v2.json</a></li>
       <li><code>blockHash</code>: a block hash</li>
       <li><code>blockHeight</code>: a block height</li>
       <li><code>from</code>: unix timestamp (<i>overrides <code>timeframe</code></i>)</li>
