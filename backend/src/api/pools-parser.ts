@@ -144,24 +144,27 @@ class PoolsParser {
   public matchBlockMiner(scriptsig: string, addresses: string[], pools: PoolTag[]): PoolTag | undefined {
     const asciiScriptSig = transactionUtils.hex2ascii(scriptsig);
 
-    for (let i = 0; i < pools.length; ++i) {
+    // DATUM pools are checked first, since their coinbases may also contain tags of the miner's own pool
+    const sortedPools = pools.slice().sort((a, b) => (b.datum ? 1 : 0) - (a.datum ? 1 : 0));
+
+    for (let i = 0; i < sortedPools.length; ++i) {
       if (addresses.length) {
-        const poolAddresses: string[] = typeof pools[i].addresses === 'string' ?
-          JSON.parse(pools[i].addresses) : pools[i].addresses;
+        const poolAddresses: string[] = typeof sortedPools[i].addresses === 'string' ?
+          JSON.parse(sortedPools[i].addresses) : sortedPools[i].addresses;
         for (let y = 0; y < poolAddresses.length; y++) {
           if (addresses.indexOf(poolAddresses[y]) !== -1) {
-            return pools[i];
+            return sortedPools[i];
           }
         }
       }
 
-      const regexes: string[] = typeof pools[i].regexes === 'string' ?
-        JSON.parse(pools[i].regexes) : pools[i].regexes;
+      const regexes: string[] = typeof sortedPools[i].regexes === 'string' ?
+        JSON.parse(sortedPools[i].regexes) : sortedPools[i].regexes;
       for (let y = 0; y < regexes.length; ++y) {
         const regex = new RegExp(regexes[y], 'i');
         const match = asciiScriptSig.match(regex);
         if (match !== null) {
-          return pools[i];
+          return sortedPools[i];
         }
       }
     }
