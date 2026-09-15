@@ -184,7 +184,8 @@ class MiningRoutes {
     let currentHashrate = 0, currentDifficulty = 0;
     try {
       currentHashrate = await bitcoinClient.getNetworkHashPs(1008);
-      currentDifficulty = await bitcoinClient.getDifficulty();
+      const blockchainInfo = await bitcoinClient.getBlockchainInfo();
+      currentDifficulty = blockchainInfo.difficulty ?? blockchainInfo.difficulty_blake2b ?? 0;
     } catch (e) {
       logger.debug('Bitcoin Core is not available, using zeroed value for current hashrate and difficulty');
     }

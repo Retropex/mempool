@@ -48,7 +48,8 @@ export namespace IBitcoinApi {
     mediantime: number;              //  (numeric) The median block time expressed in UNIX epoch time
     nonce: number;                   //  (numeric) The nonce
     bits: string;                    //  (string) The bits
-    difficulty: number;              //  (numeric) The difficulty
+    difficulty?: number;             //  (numeric) The difficulty (SHA256d blocks only on Bitcoin Knots since the BLAKE2b change)
+    difficulty_blake2b?: number;     //  (numeric) Expected BLAKE2b hashes for the block (header-v2 blocks on Bitcoin Knots)
     chainwork: string;               //  (string) Expected number of hashes required to produce the chain up to this block (in hex)
     nTx: number;                     //  (numeric) The number of transactions in the block
     previousblockhash: string;       //  (string) The hash of the previous block
@@ -138,7 +139,8 @@ export namespace IBitcoinApi {
     blocks: number;                  // (numeric) the current number of blocks processed in the server
     headers: number;                 // (numeric) the current number of headers we have validated
     bestblockhash: string,           // (string) the hash of the currently best block
-    difficulty: number;              // (numeric) the current difficulty
+    difficulty?: number;             // (numeric) the current difficulty (SHA256d tip only on Bitcoin Knots since the BLAKE2b change)
+    difficulty_blake2b?: number;     // (numeric) expected BLAKE2b hashes for the tip block (header-v2 tip on Bitcoin Knots)
     mediantime: number;              // (numeric) median time for the current best block
     verificationprogress: number;    // (numeric) estimate of verification progress [0..1]
     initialblockdownload: boolean;   // (bool) (debug information) estimate of whether this node is in Initial Block Download mode.
