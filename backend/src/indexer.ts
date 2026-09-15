@@ -12,6 +12,7 @@ import statisticsReplicator from './replication/StatisticsReplication';
 import AccelerationRepository from './repositories/AccelerationRepository';
 import BlocksAuditsRepository from './repositories/BlocksAuditsRepository';
 import BlocksRepository from './repositories/BlocksRepository';
+import MinerNamesRepository from './repositories/MinerNamesRepository';
 
 export interface CoreIndex {
   name: string;
@@ -223,6 +224,7 @@ class Indexer {
 
       void this.runSingleTask('blocksPrices');
       await blocks.$indexCoinbaseAddresses();
+      await MinerNamesRepository.$indexMissingMiners();
       await mining.$indexDifficultyAdjustments();
       await mining.$generateNetworkHashrateHistory();
       await mining.$generatePoolHashrateHistory();

@@ -1,4 +1,4 @@
-import { BlockPrice, PoolInfo, PoolStats, RewardStats } from '../../mempool.interfaces';
+import { BlockPrice, PoolInfo, PoolMinerStats, PoolStats, RewardStats } from '../../mempool.interfaces';
 import BlocksRepository from '../../repositories/BlocksRepository';
 import PoolsRepository, { POOLS_STATS_INTERVALS } from '../../repositories/PoolsRepository';
 import HashratesRepository from '../../repositories/HashratesRepository';
@@ -15,6 +15,7 @@ import bitcoinApi from '../bitcoin/bitcoin-api-factory';
 import { IEsploraApi } from '../bitcoin/esplora-api.interface';
 import database from '../../database';
 import MiningStatsCache from './mining-stats-cache';
+import MinerNamesRepository, { MinerInfo } from '../../repositories/MinerNamesRepository';
 
 interface DifficultyBlock {
   timestamp: number,
@@ -39,6 +40,8 @@ class Mining {
   public reindexHashrateRequested = false;
   public reindexDifficultyAdjustmentRequested = false;
   private static readonly RESYNC_MS = 600000;
+  /** How many DATUM miners each pool reports; the rest are folded into the pool's remainder */
+  private static readonly MAX_MINERS_PER_POOL = 20;
   private poolsStatsCache: MiningStatsCache<PoolsStats> = new MiningStatsCache('poolsStats', this.$queryAllPoolsStats.bind(this), Mining.RESYNC_MS);
   private poolsHistoricalHashrateCache: MiningStatsCache<any[]> = new MiningStatsCache('poolsHistoricalHashrate', this.$queryAllPoolsHashrate.bind(this), Mining.RESYNC_MS);
 
@@ -122,12 +125,15 @@ class Mining {
   /** @asyncUnsafe */
   private async $queryAllPoolsStats(): Promise<Record<string, PoolsStats>> {
     const poolsInfoPerInterval: Record<string, PoolInfo[]> = await PoolsRepository.$getPoolsInfoPerInterval();
+    const minersInfoPerInterval: Record<string, MinerInfo[]> = await MinerNamesRepository.$getMinersInfoPerInterval();
     const estimatedHashrates = await this.$getEstimatedHashrates();
 
     const statsByInterval: Record<string, PoolsStats> = {};
     for (const interval of POOLS_STATS_INTERVALS) {
       let rank = 1;
       let blockCount = 0;
+
+      const minersByPool = this.groupMinersByPool(minersInfoPerInterval[interval]);
 
       const poolStats: PoolStats[] = [];
       poolsInfoPerInterval[interval].forEach((poolInfo) => {
@@ -141,7 +147,9 @@ class Mining {
           slug: poolInfo.slug,
           avgMatchRate: poolInfo.avgMatchRate !== null ? Math.round(100 * poolInfo.avgMatchRate) / 100 : null,
           avgFeeDelta: poolInfo.avgFeeDelta,
-          poolUniqueId: poolInfo.poolUniqueId
+          poolUniqueId: poolInfo.poolUniqueId,
+          miners: minersByPool.get(poolInfo.poolId)?.miners,
+          minerBlockCount: minersByPool.get(poolInfo.poolId)?.blockCount,
         });
         blockCount += poolInfo.blockCount;
       });
@@ -150,6 +158,32 @@ class Mining {
     }
 
     return statsByInterval;
+  }
+
+  /**
+   * Index a window's miners by pool, keeping only the biggest few of each.
+   *
+   * A DATUM pool can have hundreds of gateways over a long window, and the ranking only draws
+   * the largest of them, so the tail is left out of the response rather than shipped and
+   * discarded. `blockCount` still counts every gateway block, so the frontend can tell the
+   * miners it was not sent apart from the blocks the pool built itself.
+   */
+  private groupMinersByPool(miners: MinerInfo[]): Map<number, { miners: PoolMinerStats[], blockCount: number }> {
+    const byPool: Map<number, { miners: PoolMinerStats[], blockCount: number }> = new Map();
+
+    for (const miner of miners) { // already sorted biggest first
+      let pool = byPool.get(miner.poolId);
+      if (!pool) {
+        pool = { miners: [], blockCount: 0 };
+        byPool.set(miner.poolId, pool);
+      }
+      if (pool.miners.length < Mining.MAX_MINERS_PER_POOL) {
+        pool.miners.push({ name: miner.name, blockCount: miner.blockCount });
+      }
+      pool.blockCount += miner.blockCount;
+    }
+
+    return byPool;
   }
 
   public async $getPoolsStats(interval: string | null): Promise<PoolsStats> {

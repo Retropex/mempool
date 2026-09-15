@@ -25,8 +25,15 @@ export interface PoolInfo {
   poolUniqueId: number;
 }
 
+export interface PoolMinerStats {
+  name: string;
+  blockCount: number;
+}
+
 export interface PoolStats extends PoolInfo {
   rank: number;
+  miners?: PoolMinerStats[];
+  minerBlockCount?: number;
 }
 
 export enum TemplateAlgorithm {
