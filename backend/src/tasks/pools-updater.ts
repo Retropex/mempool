@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import poolsParser from '../api/pools-parser';
+import mining from '../api/mining/mining';
 import config from '../config';
 import DB from '../database';
 import backendInfo from '../api/backend-info';
@@ -93,6 +94,9 @@ class PoolsUpdater {
         await this.updateDBSha(githubSha);
         await poolsParser.migratePoolsJson();
         await DB.query('COMMIT;');
+        // Must run after COMMIT: its concurrent queries would take the transaction's pooled
+        // connection, sending COMMIT to another connection and leaving the import uncommitted
+        void mining.$rebuildPoolsStatsCache();
       } catch (e) {
         logger.err(`Could not migrate mining pools, rolling back. Exception: ${JSON.stringify(e)}`, this.tag);
         await DB.query('ROLLBACK;');

@@ -137,7 +137,7 @@ class PoolsParser {
       // update persistent cache with the reindexed data
       void diskCache.$saveCacheToDisk();
       void redisCache.$updateBlocks(blocks.getBlocks());
-      void mining.$rebuildPoolsStatsCache();
+      // pools stats cache is rebuilt by the caller once the transaction is committed
     }
   }
 
