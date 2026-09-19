@@ -364,7 +364,7 @@ class Blocks {
         };
 
         if (pool.datum) {
-          extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
+          extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw, pool.slug);
         } else if (extras.pool.name === 'DMND') {
           extras.pool.minerNames = parseDMNDTemplateCreator(extras.coinbaseRaw);
         }

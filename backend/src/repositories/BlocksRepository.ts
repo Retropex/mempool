@@ -1368,7 +1368,7 @@ class BlocksRepository {
     }
 
     if (dbBlk.poolDatum) {
-      extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
+      extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw, extras.pool.slug);
     } else if (extras.pool.name === 'DMND') {
       extras.pool.minerNames = parseDMNDTemplateCreator(extras.coinbaseRaw);
     }
