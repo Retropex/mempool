@@ -202,8 +202,20 @@ export function getVarIntLength(n: number): number {
   }
 }
 
-/** Extracts miner names from a DATUM coinbase transaction */
-export function parseDATUMTemplateCreator(coinbaseRaw: string): string[] | null {
+/**
+ * DATUM pools, by slug, that mark the templates they build themselves with a private tag: their
+ * own tag repeated where a DATUM coinbase carries the miner's. For these pools that tag is the
+ * only sign of a pool-built block, so every other coinbase came through a DATUM gateway, even
+ * one whose miner left their own tag empty.
+ */
+const PRIVATE_TAG_POOLS = ['convoy'];
+
+export function tagsPrivateTemplates(poolSlug: string | undefined): boolean {
+  return !!poolSlug && PRIVATE_TAG_POOLS.includes(poolSlug);
+}
+
+/** Extracts miner names from a DATUM coinbase transaction, or null when the pool's private tag says it built the template itself */
+export function parseDATUMTemplateCreator(coinbaseRaw: string, poolSlug?: string): string[] | null {
   const bytes: number[] = [];
   for (let c = 0; c < coinbaseRaw.length; c += 2) {
       bytes.push(parseInt(coinbaseRaw.slice(c, c + 2), 16));
@@ -223,5 +235,14 @@ export function parseDATUMTemplateCreator(coinbaseRaw: string): string[] | null 
   let tagString = String.fromCharCode(...tags);
   tagString = tagString.replace('\x00', '');
 
-  return tagString.split('\x0f').map((name) => name.replace(/[^a-zA-Z0-9 ]/g, ''));
+  const minerNames = tagString.split('\x0f').map((name) => name.replace(/[^a-zA-Z0-9 ]/g, ''));
+
+  if (tagsPrivateTemplates(poolSlug) && minerNames.length > 1) {
+    const poolTag = minerNames[0].trim();
+    if (poolTag.length && minerNames[1].trim() === poolTag) {
+      return null;
+    }
+  }
+
+  return minerNames;
 }

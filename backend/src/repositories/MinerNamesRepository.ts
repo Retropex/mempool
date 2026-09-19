@@ -2,7 +2,7 @@ import DB from '../database';
 import logger from '../logger';
 import { Common } from '../api/common';
 import { BlockExtended, PoolTag } from '../mempool.interfaces';
-import { parseDATUMTemplateCreator } from '../utils/bitcoin-script';
+import { parseDATUMTemplateCreator, tagsPrivateTemplates } from '../utils/bitcoin-script';
 
 export interface MinerInfo {
   poolId: number; // mysql pools row id
@@ -12,6 +12,12 @@ export interface MinerInfo {
 
 /** The longest miner tag `blocks_miners` can hold; longer tags are truncated to fit */
 const MAX_MINER_NAME_LENGTH = 64;
+
+/**
+ * What the blocks of a gateway without a miner tag are ranked under. The parser strips
+ * parentheses from every tag, so no coinbase can claim this name for itself.
+ */
+const UNTAGGED_MINER_NAME = '(untagged)';
 
 /** How many blocks the backfill reads at a time, bounding both the query and the memory it needs */
 const BACKFILL_CHUNK_SIZE = 1000;
@@ -34,16 +40,27 @@ class MinerNamesRepository {
   /**
    * The miner tag a DATUM coinbase attributes the template to, or null when the pool built it
    * itself. minerNames[0] is the pool's own tag, minerNames[1] the gateway operator's.
+   *
+   * A coinbase with no miner tag is usually the pool's own, but a pool that marks its own
+   * templates with a private tag (see PRIVATE_TAG_POOLS) leaves no block untagged, so for such
+   * a pool it is a gateway whose operator left the tag empty.
    */
-  public getMinerName(coinbaseRaw: string | undefined): string | null {
+  public getMinerName(coinbaseRaw: string | undefined, poolSlug: string): string | null {
     if (!coinbaseRaw) {
       return null;
     }
 
-    const minerNames = parseDATUMTemplateCreator(coinbaseRaw);
-    const name = minerNames && minerNames.length > 1 ? minerNames[1].trim() : '';
+    const minerNames = parseDATUMTemplateCreator(coinbaseRaw, poolSlug);
+    if (!minerNames) { // the pool's private tag
+      return null;
+    }
 
-    return name.length ? name.slice(0, MAX_MINER_NAME_LENGTH) : null;
+    const name = minerNames.length > 1 ? minerNames[1].trim() : '';
+    if (name.length) {
+      return name.slice(0, MAX_MINER_NAME_LENGTH);
+    }
+
+    return tagsPrivateTemplates(poolSlug) ? UNTAGGED_MINER_NAME : null;
   }
 
   /**
@@ -59,7 +76,7 @@ class MinerNamesRepository {
     }
 
     try {
-      const name = this.getMinerName(block.extras.coinbaseRaw);
+      const name = this.getMinerName(block.extras.coinbaseRaw, pool.slug);
       await this.$saveBlockMiner(block.id, block.height, pool.id, name === null ? null : await this.$getNameId(name), block.timestamp, block.stale === true);
     } catch (e) {
       // a missing miner tag only costs this block its band of the ranking, so it must not
@@ -168,15 +185,16 @@ class MinerNamesRepository {
 
         // only now, for blocks known to be missing, is a coinbase actually read
         const [rows]: any[] = await DB.query(`
-          SELECT blocks.hash, blocks.height, blocks.pool_id AS poolId, blocks.stale,
+          SELECT blocks.hash, blocks.height, blocks.pool_id AS poolId, pools.slug AS poolSlug, blocks.stale,
             UNIX_TIMESTAMP(blocks.blockTimestamp) AS blockTimestamp, blocks.coinbase_raw AS coinbaseRaw
           FROM blocks
+          JOIN pools ON pools.id = blocks.pool_id
           WHERE blocks.hash IN (${missing.map(() => '?').join(',')})`,
           missing.map((row) => row.hash)
         );
 
         for (const row of rows) {
-          const name = this.getMinerName(row.coinbaseRaw);
+          const name = this.getMinerName(row.coinbaseRaw, row.poolSlug);
           await this.$saveBlockMiner(row.hash, row.height, row.poolId, name === null ? null : await this.$getNameId(name), row.blockTimestamp, row.stale);
         }
         indexed += rows.length;

@@ -1354,7 +1354,7 @@ class BlocksRepository {
     }
 
     if (dbBlk.poolDatum) {
-      extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw);
+      extras.pool.minerNames = parseDATUMTemplateCreator(extras.coinbaseRaw, extras.pool.slug);
     }
 
     blk.extras = <BlockExtension>extras;
