@@ -25,7 +25,7 @@ class BitcoinApi implements AbstractBitcoinApi {
       timestamp: block.time,
       bits: parseInt(block.bits, 16),
       nonce: block.nonce,
-      difficulty: block.difficulty,
+      difficulty: block.difficulty ?? block.difficulty_blake2b ?? 0,
       merkle_root: block.merkleroot,
       tx_count: block.nTx,
       size: block.size,
