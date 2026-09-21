@@ -60,4 +60,24 @@ describe('Common', () => {
       expect(result.feeRange[6]).toBeGreaterThan(0); // max fee
     });
   });
+
+  describe('getBlake2bDifficulty', () => {
+    test('should match difficulty_blake2b as reported by Bitcoin Knots', () => {
+      // bits and `difficulty_blake2b` from `getblockheader` on Bitcoin Knots v29.4.2, which prints 16 significant digits
+      const vectors: [number, string][] = [
+        [0x1a008d4f, '1.305422662852701e+17'], // mainnet #961640, first BLAKE2b block
+        [0x193c2d40, '3.065426710290093e+17'], // mainnet #965664
+        [0x190141c0, '1.467712970588856e+19'], // mainnet #973163
+      ];
+      for (const [bits, expected] of vectors) {
+        expect(Common.getBlake2bDifficulty(bits).toPrecision(16)).toEqual(Number(expected).toPrecision(16));
+      }
+    });
+
+    test('should return 0 for a null, negative or overflowing target', () => {
+      expect(Common.getBlake2bDifficulty(0x1d000000)).toEqual(0);
+      expect(Common.getBlake2bDifficulty(0x1d800001)).toEqual(0);
+      expect(Common.getBlake2bDifficulty(0x23000001)).toEqual(0);
+    });
+  });
 });
