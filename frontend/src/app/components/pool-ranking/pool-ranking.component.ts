@@ -23,9 +23,12 @@ interface MinerBand {
   /** Where the band sits around the pie, as a share of a full turn from twelve o'clock */
   startAngle: number;
   endAngle: number;
-  /** Where the band sits across the depth of the wedge, 0 at the hole and 1 at the rim */
-  innerRadius: number;
-  outerRadius: number;
+  /**
+   * Where the band sits across the wedge, as the share of the wedge's area lying inside each
+   * edge: 0 at the hole and 1 at the rim
+   */
+  innerShare: number;
+  outerShare: number;
   value: number;
   /** The pool's slug, which is what the chart's click handler navigates by */
   data: string;
@@ -59,8 +62,6 @@ export class PoolRankingComponent implements OnInit {
   private static readonly SERIES_COLORS = chartColors.filter(color => color !== '#FDD835');
   /** At most this many miners get their own band in a pool's slice */
   private static readonly MAX_MINER_BANDS = 8;
-  /** Thinnest band a slice will draw, as a share of the depth of its wedge */
-  private static readonly MIN_BAND_DEPTH = 0.08;
   /**
    * Lightness the first band is drawn at and the floor the last one darkens to. The floor is
    * what keeps the deepest palette colours (navy, indigo, purple) off the page background: at
@@ -297,12 +298,13 @@ export class PoolRankingComponent implements OnInit {
    *
    * The slice keeps its angles — the pie is the pie it always was — and it is the depth of the
    * wedge that is shared out, so a pool only two degrees wide still has the full ring to show
-   * its miners in. The blocks the pool built itself sit innermost and the miners climb outwards
-   * by size, putting the biggest on the rim, which is also where the ring is roomiest.
+   * its miners in. The bands, the pool's own blocks among them, climb outwards by size, putting
+   * the biggest on the rim, which is also where the ring is roomiest.
    *
-   * Every band is given a floor of the wedge's depth before the rest is shared out by block
-   * count, so no miner is drawn as a hairline; the floors are capped at half the wedge so the
-   * bands still visibly differ by size. The tooltip carries the exact block counts.
+   * Each band's area is exactly its share of the pool's blocks, so a miner with half the pool's
+   * blocks covers half the wedge. That is not half its depth: the wedge widens towards the rim,
+   * so an outer band needs less depth than an inner one for the same area. The tooltip carries
+   * the exact block counts.
    */
   private generateSliceBands(pool, poolColor: string, startAngle: number, endAngle: number): MinerBand[] {
     const miners = pool.miners ?? [];
@@ -315,8 +317,6 @@ export class PoolRankingComponent implements OnInit {
     const otherMinerBlocks = Math.max(0, (pool.minerBlockCount ?? shownBlocks) - shownBlocks);
     const poolBlocks = Math.max(0, pool.blockCount - shownBlocks - otherMinerBlocks);
 
-    // innermost first: the pool's own blocks, then the miners it did not list, then the listed
-    // miners smallest to largest, so the biggest gateway ends up on the rim
     const ordered: { name: string, blockCount: number }[] = [];
     if (poolBlocks > 0) {
       ordered.push({ name: $localize`:@@mining.pool-own-template:Built by the pool`, blockCount: poolBlocks });
@@ -324,18 +324,18 @@ export class PoolRankingComponent implements OnInit {
     if (otherMinerBlocks > 0) {
       ordered.push({ name: $localize`:@@mining.other-miners:Other miners`, blockCount: otherMinerBlocks });
     }
-    ordered.push(...shown.slice().reverse());
+    ordered.push(...shown);
+    // innermost first, smallest to largest, so the biggest band ends up on the rim, looks much nicer
+    ordered.sort((a, b) => a.blockCount - b.blockCount);
 
     const totalBlocks = ordered.reduce((sum, band) => sum + band.blockCount, 0);
-    const floor = Math.min(PoolRankingComponent.MIN_BAND_DEPTH, 0.5 / ordered.length);
-    const toShare = 1 - floor * ordered.length;
     const lightest = PoolRankingComponent.BAND_LIGHTEST;
     const darkest = PoolRankingComponent.BAND_DARKEST;
 
-    let depth = 0;
+    let share = 0;
     return ordered.map((band, i) => {
-      const innerRadius = depth;
-      depth += floor + toShare * band.blockCount / totalBlocks;
+      const innerShare = share;
+      share += band.blockCount / totalBlocks;
       return {
         name: band.name,
         blockCount: band.blockCount,
@@ -345,8 +345,8 @@ export class PoolRankingComponent implements OnInit {
         color: this.bandColor(poolColor, darkest + (i / Math.max(ordered.length - 1, 1)) * (lightest - darkest)),
         startAngle,
         endAngle,
-        innerRadius,
-        outerRadius: depth,
+        innerShare,
+        outerShare: share,
         value: band.blockCount,
         data: pool.slug,
       };
@@ -476,16 +476,19 @@ export class PoolRankingComponent implements OnInit {
         const width = api.getWidth();
         const height = api.getHeight();
         const unit = Math.min(width, height) / 2;
-        const innerRadius = ring[0] * unit;
-        const depth = (ring[1] - ring[0]) * unit;
+        const hole = ring[0] * unit;
+        const rim = ring[1] * unit;
+        // a sector's area grows with the square of its radius, so the radius enclosing a given
+        // share of the wedge's area is found on the squares
+        const radiusAt = (share: number): number => Math.sqrt(hole * hole + share * (rim * rim - hole * hole));
 
         return {
           type: 'sector',
           shape: {
             cx: width / 2,
             cy: height / 2,
-            r0: innerRadius + band.innerRadius * depth,
-            r: innerRadius + band.outerRadius * depth,
+            r0: radiusAt(band.innerShare),
+            r: radiusAt(band.outerShare),
             // canvas angles run from three o'clock and increase clockwise on screen, which is
             // where the pie's own twelve o'clock start and clockwise layout land
             startAngle: -Math.PI / 2 + 2 * Math.PI * band.startAngle,
