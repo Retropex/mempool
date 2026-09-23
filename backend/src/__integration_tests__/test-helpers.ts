@@ -138,11 +138,17 @@ export async function insertTestBlock(blockData: {
   tx_count?: number;
   difficulty?: number;
   poolId?: number | null;
+  bits?: number;
+  header?: string;
+  stale?: boolean;
 }) {
   const timestamp = blockData.blockTimestamp || new Date();
   const size = blockData.size || 1000000;
   const weight = blockData.weight || 4000000;
   const txCount = blockData.tx_count || 2000;
+  const bits = blockData.bits ?? 0x1d00ffff;
+  const header = blockData.header ?? '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';  // 160 chars
+  const stale = blockData.stale ? 1 : 0;
 
   await DB.query(
     `INSERT INTO blocks (
@@ -165,12 +171,12 @@ export async function insertTestBlock(blockData: {
       blockData.difficulty || 1.0,
       blockData.poolId !== undefined ? blockData.poolId : null,
       0x20000000,
-      0x1d00ffff,
+      bits,
       0,
       '0000000000000000000000000000000000000000000000000000000000000000',
       '0000000000000000000000000000000000000000000000000000000000000000',
       timestamp,
-      0,  // stale = false
+      stale,
       // Required fields with defaults
       50000000,  // fees (in sats)
       JSON.stringify([0, 0, 0, 0, 0, 0, 0]),  // fee_span (JSON array)
@@ -182,7 +188,7 @@ export async function insertTestBlock(blockData: {
       txCount,  // segwit_total_txs (assume all segwit for test)
       size,  // segwit_total_size
       weight,  // segwit_total_weight
-      '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',  // header (160 chars)
+      header,
       0  // utxoset_change
     ]
   );

@@ -7,7 +7,7 @@ import cpfpRepository from '../repositories/CpfpRepository';
 import { RowDataPacket } from 'mysql2';
 
 class DatabaseMigration {
-  private static currentVersion = 116;
+  private static currentVersion = 117;
   private queryTimeout = 3600_000;
   private statisticsAddedIndexed = false;
   private uniqueLogs: string[] = [];
@@ -1281,6 +1281,24 @@ class DatabaseMigration {
       await this.$executeQuery(this.getCreateMinerNamesTableQuery(), await this.$checkIfTableExists('miner_names'));
       await this.$executeQuery(this.getCreateBlocksMinersTableQuery(), await this.$checkIfTableExists('blocks_miners'));
       await this.updateToSchemaVersion(116);
+    }
+
+    if (databaseSchemaVersion < 117 && isBitcoin === true) {
+      // BLAKE2b (header v2) blocks indexed from esplora, or from a Bitcoin Knots node older than v29.4.2, were saved
+      // with a SHA256d-style difficulty. Rewrite them as `difficulty_blake2b`, like the blocks indexed since
+      const isHeaderV2 = (table: string): string => `LENGTH(${table}.header) >= 328 AND CONV(SUBSTRING(${table}.header, 7, 2), 16, 10) >= 128`;
+      const [bitsRows]: any[] = await DB.query(`SELECT DISTINCT bits FROM blocks WHERE ${isHeaderV2('blocks')}`);
+      for (const row of bitsRows) {
+        await DB.query(`UPDATE blocks SET difficulty = ? WHERE bits = ? AND ${isHeaderV2('blocks')}`, [Common.getBlake2bDifficulty(row.bits), row.bits]);
+      }
+      // `adjustment` is a ratio between two blocks and stays valid, only the absolute difficulty needs the new unit
+      await this.$executeQuery(`
+        UPDATE difficulty_adjustments
+        JOIN blocks ON blocks.height = difficulty_adjustments.height AND blocks.stale = 0
+        SET difficulty_adjustments.difficulty = blocks.difficulty
+        WHERE ${isHeaderV2('blocks')}
+      `);
+      await this.updateToSchemaVersion(117);
     }
   }
 

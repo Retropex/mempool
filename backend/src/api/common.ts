@@ -659,6 +659,32 @@ export class Common {
     };
   }
 
+  /**
+   * Expected average number of BLAKE2b hashes needed to find a block with the given compact target.
+   * Mirrors the `difficulty_blake2b` RPC field of Bitcoin Knots, i.e. GetBlockProof().getdouble(),
+   * including how the 256-bit integer is folded into a double. The RPC only prints 16 significant
+   * digits, so the two agree to that precision rather than to the last bit.
+   */
+  static getBlake2bDifficulty(bits: number): number {
+    const size = bits >>> 24;
+    const word = bits & 0x007fffff;
+    const isNegative = word !== 0 && (bits & 0x00800000) !== 0;
+    const isOverflow = word !== 0 && (size > 34 || (word > 0xff && size > 33) || (word > 0xffff && size > 32));
+    const target = size <= 3 ? BigInt(word) >> BigInt(8 * (3 - size)) : BigInt(word) << BigInt(8 * (size - 3));
+    if (isNegative || isOverflow || target === 0n) {
+      return 0;
+    }
+    // 2**256 / (target + 1), computed as (~target / (target + 1)) + 1 to stay within 256 bits
+    const proof = (((1n << 256n) - 1n - target) / (target + 1n)) + 1n;
+    let difficulty = 0;
+    let factor = 1;
+    for (let i = 0n; i < 8n; i++) {
+      difficulty += factor * Number((proof >> (32n * i)) & 0xffffffffn);
+      factor *= 4294967296;
+    }
+    return difficulty;
+  }
+
   static getTransactionFlags(tx: TransactionExtended, height?: number): number {
     let flags = tx.flags ? BigInt(tx.flags) : 0n;
 
