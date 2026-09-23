@@ -23,9 +23,9 @@ export class TxFeaturesComponent implements OnChanges {
   };
   isRbfTransaction: boolean;
   isTaproot: boolean;
-  // 'all': every parsed signature opts in to SIGHASH_UNIFIED (0x20), so the
-  // transaction is invalid on any chain without the hardfork.
-  // 'partial': some inputs opt in, some do not. 'none': no input opts in.
+  // 'all': at least one parsed signature opts in to SIGHASH_UNIFIED (0x20),
+  // so the transaction is invalid on any chain without the hardfork.
+  // 'partial': currently unused. 'none': no parsed signature opts in.
   // 'unknown': no signatures could be parsed (e.g. unsupported script types).
   replayProtection: 'all' | 'partial' | 'none' | 'unknown' = 'unknown';
   unifiedEnabled: boolean;
@@ -54,17 +54,18 @@ export class TxFeaturesComponent implements OnChanges {
   }
 
   private classifyReplayProtection(): 'all' | 'partial' | 'none' | 'unknown' {
-    let optedIn = 0;
-    let legacy = 0;
+    // A single signature with SIGHASH_UNIFIED (0x20) anywhere in the
+    // transaction makes the whole transaction invalid under the pre-fork
+    // rules: every input must validate, and in a multisig every provided
+    // signature must verify. So one opted-in signature is enough.
+    let parsed = 0;
     for (const vin of this.tx.vin) {
       let sigs;
       try { sigs = processInputSignatures(vin); } catch { sigs = []; }
       if (!sigs?.length) { continue; }
-      if (sigs.every(sig => (sig.sighash & 0x20) !== 0)) { optedIn++; } else { legacy++; }
+      parsed++;
+      if (sigs.some(sig => (sig.sighash & 0x20) !== 0)) { return 'all'; }
     }
-    if (!optedIn && !legacy) { return 'unknown'; }
-    if (!legacy) { return 'all'; }
-    if (!optedIn) { return 'none'; }
-    return 'partial';
+    return parsed ? 'none' : 'unknown';
   }
 }
