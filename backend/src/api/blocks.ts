@@ -323,6 +323,11 @@ class Blocks {
     extras.header = header;
     extras.headerVersion = Common.getBlockHeaderVersion(header);
     extras.headerV2 = Common.getBlockHeaderV2Fields(header);
+    if (extras.headerVersion === 2) {
+      // Esplora and Bitcoin Knots older than v29.4.2 report a SHA256d-style difficulty for BLAKE2b blocks.
+      // Derive it from bits instead, so every BLAKE2b block is saved as `difficulty_blake2b` whatever the source
+      blk.difficulty = Common.getBlake2bDifficulty(block.bits);
+    }
 
     const coinStatsIndex = indexer.isCoreIndexReady('coinstatsindex');
     if (coinStatsIndex !== null && coinStatsIndex.best_block_height >= block.height) {
@@ -1246,7 +1251,7 @@ class Blocks {
           await DifficultyAdjustmentsRepository.$saveAdjustments({
             time: block.timestamp,
             height: block.height,
-            difficulty: block.difficulty,
+            difficulty: blockExtended.difficulty,
             adjustment,
           });
           this.updateTimerProgress(timer, `saved difficulty adjustment for ${this.currentBlockHeight}`);
