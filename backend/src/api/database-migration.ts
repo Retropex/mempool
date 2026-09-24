@@ -1267,7 +1267,9 @@ class DatabaseMigration {
       await this.updateToSchemaVersion(113);
     }
 
-    if (databaseSchemaVersion < 114 && isBitcoin === true) {
+    // The `pools.datum` migration above used to record itself as 115, which made databases migrated at the time skip
+    // this one. It is idempotent, so it also runs for them.
+    if ((databaseSchemaVersion < 114 || databaseSchemaVersion === 115) && isBitcoin === true) {
       // BLAKE2b (header v2) blocks indexed from esplora, or from a Bitcoin Knots node older than v29.4.2, were saved
       // with a SHA256d-style difficulty. Rewrite them as `difficulty_blake2b`, like the blocks indexed since
       const isHeaderV2 = (table: string): string => `LENGTH(${table}.header) >= 328 AND CONV(SUBSTRING(${table}.header, 7, 2), 16, 10) >= 128`;
@@ -1285,7 +1287,7 @@ class DatabaseMigration {
       await this.updateToSchemaVersion(114);
     }
 
-    // 115 is skipped: the `pools.datum` migration above records itself as 115, so some databases already carry it
+    // 115 is skipped: databases migrated when the `pools.datum` migration recorded itself as 115 already carry it
     if (databaseSchemaVersion < 116 && isBitcoin === true) {
       await this.$executeQuery(this.getCreateMinerNamesTableQuery(), await this.$checkIfTableExists('miner_names'));
       await this.$executeQuery(this.getCreateBlocksMinersTableQuery(), await this.$checkIfTableExists('blocks_miners'));

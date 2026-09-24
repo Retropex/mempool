@@ -207,6 +207,14 @@ describe('Database Migration Integration Tests', () => {
       expect(await getBlocks()).toEqual(blocksBefore);
       expect(await getAdjustments()).toEqual(adjustmentsBefore);
     });
+
+    test('should run for databases left at 115 by the pools.datum migration', async () => {
+      await DB.query('UPDATE blocks SET difficulty = ? WHERE height = 961640', [legacyDifficulty(0x1a008d4f)]);
+      await DB.query('UPDATE difficulty_adjustments SET difficulty = ? WHERE height = 961640', [legacyDifficulty(0x1a008d4f)]);
+      await runMigrationFrom(115);
+      expect((await getBlocks()).find(b => b.height === 961640)?.difficulty).toBe(Common.getBlake2bDifficulty(0x1a008d4f));
+      expect((await getAdjustments()).find(a => a.height === 961640)?.difficulty).toBe(Common.getBlake2bDifficulty(0x1a008d4f));
+    });
   });
 });
 
