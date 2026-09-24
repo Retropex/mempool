@@ -1,5 +1,5 @@
 import bitcoinApi, { bitcoinCoreApi } from '../api/bitcoin/bitcoin-api-factory';
-import { BlockExtended, BlockExtension, BlockPrice, EffectiveFeeStats } from '../mempool.interfaces';
+import { BlockExtended, BlockExtension, BlockPrice, EffectiveFeeStats, PoolTag } from '../mempool.interfaces';
 import DB from '../database';
 import logger from '../logger';
 import { Common } from '../api/common';
@@ -16,6 +16,7 @@ import BlocksAuditsRepository from './BlocksAuditsRepository';
 import transactionUtils from '../api/transaction-utils';
 import { parseDATUMTemplateCreator } from '../utils/bitcoin-script';
 import poolsUpdater from '../tasks/pools-updater';
+import MinerNamesRepository from './MinerNamesRepository';
 
 interface DatabaseBlock {
   index_version: number;
@@ -121,6 +122,7 @@ class BlocksRepository {
   public async $saveBlockInDatabase(block: BlockExtended) {
     const truncatedCoinbaseSignature = block?.extras?.coinbaseSignature?.substring(0, 500);
     const truncatedCoinbaseSignatureAscii = block?.extras?.coinbaseSignatureAscii?.substring(0, 500);
+    let pool: PoolTag | null = null;
 
     try {
       const query = `INSERT INTO blocks(
@@ -149,8 +151,8 @@ class BlocksRepository {
         ?, FROM_UNIXTIME(?)
       )`;
 
-      const poolDbId = await PoolsRepository.$getPoolByUniqueId(block.extras.pool.id);
-      if (!poolDbId) {
+      pool = await PoolsRepository.$getPoolByUniqueId(block.extras.pool.id);
+      if (!pool) {
         throw Error(`Could not find a mining pool with the unique_id = ${block.extras.pool.id}. This error should never be printed.`);
       }
 
@@ -163,7 +165,7 @@ class BlocksRepository {
         block.tx_count,
         block.extras.coinbaseRaw,
         block.difficulty,
-        poolDbId.id,
+        pool.id,
         block.extras.totalFees,
         JSON.stringify(block.extras.feeRange),
         block.extras.medianFee,
@@ -216,6 +218,10 @@ class BlocksRepository {
         logger.err('Cannot save indexed block into db. Reason: ' + (e instanceof Error ? e.message : e), logger.tags.mining);
         throw e;
       }
+    }
+
+    if (pool) {
+      await MinerNamesRepository.$saveMinerName(block, pool);
     }
   }
 
@@ -1226,6 +1232,7 @@ class BlocksRepository {
         WHERE height = ? AND hash != ?`,
         [height, hash ?? '']
       );
+      await MinerNamesRepository.$setCanonicalBlockAtHeight(hash, height);
     } catch (e) {
       logger.err(`Cannot set canonical block at height. Reason: ` + (e instanceof Error ? e.message : e));
       throw e;

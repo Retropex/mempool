@@ -7,7 +7,7 @@ import cpfpRepository from '../repositories/CpfpRepository';
 import { RowDataPacket } from 'mysql2';
 
 class DatabaseMigration {
-  private static currentVersion = 114;
+  private static currentVersion = 116;
   private queryTimeout = 3600_000;
   private statisticsAddedIndexed = false;
   private uniqueLogs: string[] = [];
@@ -1264,7 +1264,7 @@ class DatabaseMigration {
 
     if (databaseSchemaVersion < 113) {
       await this.$executeQuery('ALTER TABLE `pools` ADD datum TINYINT(1) NOT NULL DEFAULT 0');
-      await this.updateToSchemaVersion(115);
+      await this.updateToSchemaVersion(113);
     }
 
     if (databaseSchemaVersion < 114 && isBitcoin === true) {
@@ -1283,6 +1283,13 @@ class DatabaseMigration {
         WHERE ${isHeaderV2('blocks')}
       `);
       await this.updateToSchemaVersion(114);
+    }
+
+    // 115 is skipped: the `pools.datum` migration above records itself as 115, so some databases already carry it
+    if (databaseSchemaVersion < 116 && isBitcoin === true) {
+      await this.$executeQuery(this.getCreateMinerNamesTableQuery(), await this.$checkIfTableExists('miner_names'));
+      await this.$executeQuery(this.getCreateBlocksMinersTableQuery(), await this.$checkIfTableExists('blocks_miners'));
+      await this.updateToSchemaVersion(116);
     }
   }
 
@@ -1870,12 +1877,57 @@ class DatabaseMigration {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
   }
 
+  /**
+   * Distinct miner tags seen in the coinbase of DATUM blocks. Kept as a dictionary so
+   * `blocks_miners` stores a 3 byte id per block instead of the name, and so grouping the
+   * ranking by miner never touches a string.
+   */
+  private getCreateMinerNamesTableQuery(): string {
+    return `CREATE TABLE IF NOT EXISTS miner_names (
+      id mediumint unsigned NOT NULL AUTO_INCREMENT,
+      name varchar(64) NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
+  }
+
+  /**
+   * One row per block whose template was built by a miner's own DATUM gateway. Only DATUM
+   * pools get rows here, so the table stays a few thousand rows wide and the pools ranking
+   * can aggregate miners without reading the `blocks` table at all. `blockTimestamp` and
+   * `stale` are copied from `blocks` to keep that aggregation single-table; `blockTimestamp`
+   * never changes, and `stale` is mirrored by $setCanonicalBlockAtHeight.
+   *
+   * A null `miner_id` records a block the pool built itself. The ranking's join drops
+   * those rows, and having them is what stops the backfill from reading their coinbase again
+   * on every pass looking for a tag that is not there.
+   *
+   * `height` is indexed for the reorg mirror; `pool_id` and `miner_id` are not, because the
+   * ranking groups over the whole table anyway and an index neither of them reads would only
+   * cost a write on every block.
+   */
+  private getCreateBlocksMinersTableQuery(): string {
+    return `CREATE TABLE IF NOT EXISTS blocks_miners (
+      hash varchar(65) NOT NULL,
+      height int(11) unsigned NOT NULL,
+      pool_id int(11) NOT NULL,
+      miner_id mediumint unsigned NULL DEFAULT NULL,
+      blockTimestamp timestamp NOT NULL,
+      stale tinyint(1) NOT NULL DEFAULT 0,
+      PRIMARY KEY (hash),
+      INDEX height (height)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
+  }
+
   /** @asyncUnsafe */
   public async $blocksReindexingTruncate(): Promise<void> {
     logger.warn(`Truncating pools, blocks, hashrates and difficulty_adjustments tables for re-indexing (using '--reindex-blocks'). You can cancel this command within 5 seconds`);
     await Common.sleep$(5000);
 
     await this.$executeQuery(`TRUNCATE blocks`);
+    if (await this.$checkIfTableExists('blocks_miners')) { // added in schema v116, so it may not exist yet
+      await this.$executeQuery(`TRUNCATE blocks_miners`);
+    }
     await this.$executeQuery(`TRUNCATE hashrates`);
     await this.$executeQuery(`TRUNCATE difficulty_adjustments`);
     await this.$executeQuery('DELETE FROM `pools`');

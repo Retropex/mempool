@@ -150,6 +150,12 @@ export interface ITranslators { [language: string]: string; }
 /**
  * PoolRanking component
  */
+/** Blocks a single DATUM gateway operator built the template for, within a pool */
+export interface PoolMinerStats {
+  name: string;
+  blockCount: number;
+}
+
 export interface SinglePoolStats {
   poolId: number;
   poolUniqueId: number; // unique global pool id
@@ -167,6 +173,8 @@ export interface SinglePoolStats {
   slug: string;
   avgMatchRate: number;
   avgFeeDelta: number;
+  miners?: PoolMinerStats[];
+  minerBlockCount?: number;
 }
 export interface PoolsStats {
   blockCount: number;
