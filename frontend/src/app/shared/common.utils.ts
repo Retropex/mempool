@@ -4,6 +4,14 @@ import { AmountShortenerPipe } from '@app/shared/pipes/amount-shortener.pipe';
 import { Router, ActivatedRoute } from '@angular/router';
 const amountShortenerPipe = new AmountShortenerPipe();
 
+export const COINBASE_MATURITY = 100;
+export const COINBASE_MATURITY_EXTENDED = 6480;
+export const COINBASE_MATURITY_EXTENDED_HEIGHT = 973440;
+
+export function getCoinbaseMaturity(blockHeight: number): number {
+  return blockHeight >= COINBASE_MATURITY_EXTENDED_HEIGHT ? COINBASE_MATURITY_EXTENDED : COINBASE_MATURITY;
+}
+
 export function isMobile(): boolean {
   return (window.innerWidth <= 767.98);
 }

@@ -264,4 +264,5 @@ export interface Utxo {
   vout: number;
   value: number;
   status: Status;
+  coinbase?: boolean;
 }

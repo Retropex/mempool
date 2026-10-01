@@ -2,15 +2,15 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { ElectrsApiService } from '@app/services/electrs-api.service';
-import { switchMap, filter, catchError, map, tap } from 'rxjs/operators';
+import { switchMap, filter, catchError, map, tap, take, mergeMap, toArray } from 'rxjs/operators';
 import { Address, ChainStats, Transaction, Utxo, Vin } from '@interfaces/electrs.interface';
 import { WebsocketService } from '@app/services/websocket.service';
 import { StateService } from '@app/services/state.service';
 import { AudioService } from '@app/services/audio.service';
 import { ApiService } from '@app/services/api.service';
-import { of, merge, Subscription, Observable, forkJoin } from 'rxjs';
+import { of, merge, Subscription, Observable, forkJoin, from } from 'rxjs';
 import { SeoService } from '@app/services/seo.service';
-import { seoDescriptionNetwork } from '@app/shared/common.utils';
+import { seoDescriptionNetwork, getCoinbaseMaturity } from '@app/shared/common.utils';
 import { AddressInformation } from '@interfaces/node-api.interface';
 import { AddressTypeInfo } from '@app/shared/address-utils';
 import { extractTapLeaves, fillTapTree, convertTextToBuffer, PsbtKeyValue } from '@app/shared/transaction.utils';
@@ -116,6 +116,7 @@ export class AddressComponent implements OnInit, OnDestroy {
   mempoolTxSubscription: Subscription;
   mempoolRemovedTxSubscription: Subscription;
   blockTxSubscription: Subscription;
+  coinbaseUtxoSubscription: Subscription;
   fragmentSubscription: Subscription;
   networkChangeSubscription: Subscription;
   taprootFragment: URLSearchParams;
@@ -190,6 +191,7 @@ export class AddressComponent implements OnInit, OnDestroy {
           this.isLoadingTransactions = true;
           this.transactions = null;
           this.utxos = null;
+          this.coinbaseUtxoSubscription?.unsubscribe();
           this.addressInfo = null;
           this.exampleChannel = null;
           this.tapTreeIncomplete = false;
@@ -314,6 +316,7 @@ export class AddressComponent implements OnInit, OnDestroy {
           this.fullyLoaded = true;
         }
         this.isLoadingTransactions = false;
+        this.resolveCoinbaseUtxos();
 
         const addressVin: Vin[] = [];
         const vinIds: string[] = [];
@@ -408,6 +411,7 @@ export class AddressComponent implements OnInit, OnDestroy {
             vout: index,
             value: vout.value,
             status: JSON.parse(JSON.stringify(transaction.status)),
+            coinbase: !!transaction.vin[0]?.is_coinbase,
           });
           utxosChanged = true;
         }
@@ -485,6 +489,60 @@ export class AddressComponent implements OnInit, OnDestroy {
         this.utxos = this.utxos.slice();
       }
     }
+  }
+
+  /**
+   * Flags which utxos are coinbase outputs, so immature ones can be highlighted.
+   * Uses the already loaded transactions when possible, otherwise only looks up
+   * utxos recent enough to still be immature (one request per block).
+   */
+  resolveCoinbaseUtxos(): void {
+    this.coinbaseUtxoSubscription?.unsubscribe();
+    if (!this.utxos?.length) {
+      return;
+    }
+    const utxos = this.utxos;
+    const loadedTxs = new Map<string, Transaction>((this.transactions || []).map((tx) => [tx.txid, tx]));
+
+    this.coinbaseUtxoSubscription = this.stateService.chainTip$.pipe(
+      filter((tip) => tip >= 0),
+      take(1),
+      switchMap((tip) => {
+        const blockHashes = new Set<string>();
+        for (const utxo of utxos) {
+          if (utxo.coinbase !== undefined || !utxo.status.confirmed) {
+            continue;
+          }
+          const tx = loadedTxs.get(utxo.txid);
+          if (tx) {
+            utxo.coinbase = !!tx.vin[0]?.is_coinbase;
+          } else if (utxo.status.block_hash && tip - utxo.status.block_height + 1 < getCoinbaseMaturity(utxo.status.block_height)) {
+            blockHashes.add(utxo.status.block_hash);
+          }
+        }
+        if (!blockHashes.size) {
+          return of([]);
+        }
+        return from(blockHashes).pipe(
+          mergeMap((hash) => this.electrsApiService.getBlockTxId$(hash, 0).pipe(
+            map((coinbaseTxid) => [hash, coinbaseTxid]),
+            catchError(() => of(null)),
+          ), 4),
+          filter((result) => result !== null),
+          toArray(),
+        );
+      }),
+    ).subscribe((coinbaseTxids: [string, string][]) => {
+      const coinbaseByBlock = new Map<string, string>(coinbaseTxids);
+      for (const utxo of utxos) {
+        if (utxo.coinbase === undefined && coinbaseByBlock.has(utxo.status.block_hash)) {
+          utxo.coinbase = coinbaseByBlock.get(utxo.status.block_hash) === utxo.txid;
+        }
+      }
+      if (this.utxos) {
+        this.utxos = this.utxos.slice();
+      }
+    });
   }
 
   loadMore(): void {
@@ -657,6 +715,7 @@ export class AddressComponent implements OnInit, OnDestroy {
     this.mempoolTxSubscription.unsubscribe();
     this.mempoolRemovedTxSubscription.unsubscribe();
     this.blockTxSubscription.unsubscribe();
+    this.coinbaseUtxoSubscription?.unsubscribe();
     this.websocketService.stopTrackingAddress();
     this.fragmentSubscription?.unsubscribe();
     this.networkChangeSubscription?.unsubscribe();

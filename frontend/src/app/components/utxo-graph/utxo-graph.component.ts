@@ -5,7 +5,7 @@ import { Utxo } from '@interfaces/electrs.interface';
 import { StateService } from '@app/services/state.service';
 import { Router } from '@angular/router';
 import { RelativeUrlPipe } from '@app/shared/pipes/relative-url/relative-url.pipe';
-import { renderSats } from '@app/shared/common.utils';
+import { renderSats, getCoinbaseMaturity } from '@app/shared/common.utils';
 import { colorToHex, hexToColor, mix } from '@components/block-overview-graph/utils';
 import { TimeService } from '@app/services/time.service';
 import { WebsocketService } from '@app/services/websocket.service';
@@ -15,6 +15,7 @@ import { defaultAuditColors } from '@components/block-overview-graph/utils';
 const newColorHex = '1BF4AF';
 const oldColorHex = '3C39F4';
 const pendingColorHex = 'eba814';
+const immatureColorHex = 'e53935';
 const newColor = hexToColor(newColorHex);
 const oldColor = hexToColor(oldColorHex);
 
@@ -340,6 +341,10 @@ export class UtxoGraphComponent implements OnChanges, OnDestroy {
           <br>
           ${valueStr}
           <br>
+          ${this.isImmatureCoinbase(utxo)
+            ? `<span style="color: #${immatureColorHex};">Immature coinbase (${this.confirmationsToMaturity(utxo)} confirmations left)</span><br>`
+            : ''
+          }
           ${utxo.status.confirmed
             ? 'Confirmed ' + this.timeService.calculate(utxo.status.block_time, 'since', true, 1, 'minute').text
             : utxo.status['accelerated']
@@ -355,8 +360,19 @@ export class UtxoGraphComponent implements OnChanges, OnDestroy {
     this.cd.markForCheck();
   }
 
+  confirmationsToMaturity(utxo: Utxo): number {
+    const confirmations = this.stateService.latestBlockHeight - utxo.status.block_height + 1;
+    return Math.max(0, getCoinbaseMaturity(utxo.status.block_height) - confirmations);
+  }
+
+  isImmatureCoinbase(utxo: Utxo): boolean {
+    return utxo.coinbase && utxo.status.confirmed && this.stateService.latestBlockHeight >= 0 && this.confirmationsToMaturity(utxo) > 0;
+  }
+
   getColor(utxo: Utxo): string {
-    if (utxo.status['accelerated']) {
+    if (this.isImmatureCoinbase(utxo)) {
+      return immatureColorHex;
+    } else if (utxo.status['accelerated']) {
       return colorToHex(defaultAuditColors.accelerated);
     } else if (utxo.status.confirmed) {
       const age = Date.now() / 1000 - utxo.status.block_time;
