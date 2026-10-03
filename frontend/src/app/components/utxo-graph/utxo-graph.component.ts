@@ -342,7 +342,7 @@ export class UtxoGraphComponent implements OnChanges, OnDestroy {
           ${valueStr}
           <br>
           ${this.isImmatureCoinbase(utxo)
-            ? `<span style="color: #${immatureColorHex};">Immature coinbase (${this.confirmationsToMaturity(utxo)} confirmations left)</span><br>`
+            ? `<span style="color: #${immatureColorHex};">Immature generated coins (${this.confirmationsToMaturity(utxo)} confirmations left)</span><br>`
             : ''
           }
           ${utxo.status.confirmed
