@@ -446,6 +446,9 @@ export class Common {
     '': 921_000,
   };
   static MAX_DATACARRIER_BYTES = 83;
+
+  // From the BLAKE2b fork onwards, the mainnet fiat price is the BTCB2/USDC price from neoxa.exchange
+  static NEOXA_PRICE_START_HEIGHT = 961_640;
   static isStandardOpReturn(bytes: number, outputs: number,height?: number): boolean {
     if (
       (height == null || (

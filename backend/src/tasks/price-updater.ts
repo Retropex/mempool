@@ -9,6 +9,9 @@ import CoinbaseApi from './price-feeds/coinbase-api';
 import GeminiApi from './price-feeds/gemini-api';
 import KrakenApi from './price-feeds/kraken-api';
 import FreeCurrencyApi from './price-feeds/free-currency-api';
+import NeoxaApi from './price-feeds/neoxa-api';
+import bitcoinApi from '../api/bitcoin/bitcoin-api-factory';
+import { Common } from '../api/common';
 
 export interface PriceFeed {
   name: string;
@@ -62,6 +65,8 @@ class PriceUpdater {
   private lastTimeConversionsRatesFetched: number = 0;
   private latestConversionsRatesFromFeed: ConversionRates = { USD: -1 };
   private ratesChangedCallback: ((rates: ApiPrice) => void) | undefined;
+  private neoxaFeed: PriceFeed = new NeoxaApi();
+  private neoxaStartTime: number | null = null; // Timestamp of block NEOXA_PRICE_START_HEIGHT, once mined
 
   constructor() {
     this.latestPrices = this.getEmptyPricesObj();
@@ -170,6 +175,15 @@ class PriceUpdater {
     }
 
     try {
+      await this.$updateNeoxaStartTime();
+    } catch (e) {
+      // Without it we cannot tell whether BTC prices are still valid, so we wait for the next run
+      logger.err(`Cannot get block #${Common.NEOXA_PRICE_START_HEIGHT} timestamp, skipping price update. Reason: ${e instanceof Error ? e.message : e}`, logger.tags.mining);
+      this.running = false;
+      return;
+    }
+
+    try {
       await this.$updatePrice();
       if (this.historyInserted === false && config.DATABASE.ENABLED === true) {
         await this.$insertHistoricalPrices();
@@ -183,6 +197,45 @@ class PriceUpdater {
     }
 
     this.running = false;
+  }
+
+  /**
+   * Find the timestamp of block NEOXA_PRICE_START_HEIGHT, from which prices come from neoxa.exchange
+   * Stays null until that block is mined (and on other networks)
+   *
+   * @asyncUnsafe
+   */
+  private async $updateNeoxaStartTime(): Promise<void> {
+    if (this.neoxaStartTime !== null || config.MEMPOOL.NETWORK !== 'mainnet') {
+      return;
+    }
+    const tip = await bitcoinApi.$getBlockHeightTip();
+    if (tip < Common.NEOXA_PRICE_START_HEIGHT) {
+      return;
+    }
+    const block = await bitcoinApi.$getBlock(await bitcoinApi.$getBlockHash(Common.NEOXA_PRICE_START_HEIGHT));
+    this.neoxaStartTime = block.timestamp;
+    logger.info(`Using neoxa.exchange BTCB2/USDC price from block #${Common.NEOXA_PRICE_START_HEIGHT} (${new Date(block.timestamp * 1000).toISOString()})`, logger.tags.mining);
+  }
+
+  /**
+   * Neoxa only quotes USD(C), so other currencies are derived using the BTC exchange rates,
+   * i.e. BTCB2/EUR = BTCB2/USD * BTC/EUR / BTC/USD
+   */
+  private getNeoxaPrices(btcPrices: ApiPrice, neoxaUsd: number): Partial<ApiPrice> {
+    const prices: Partial<ApiPrice> = {};
+    for (const currency of this.currencies) {
+      if (!(neoxaUsd > 0)) {
+        prices[currency] = -1;
+      } else if (currency === 'USD') {
+        prices[currency] = Math.round(neoxaUsd * 100) / 100;
+      } else if (btcPrices.USD > 0 && btcPrices[currency] > 0) {
+        prices[currency] = Math.round(neoxaUsd * btcPrices[currency] / btcPrices.USD * 100) / 100;
+      } else {
+        prices[currency] = -1;
+      }
+    }
+    return prices;
   }
 
   private setLatestPrice(currency, price): void {
@@ -236,6 +289,7 @@ class PriceUpdater {
       return;
     }
 
+    const newPrices: ApiPrice = this.getEmptyPricesObj();
     for (const currency of this.currencies) {
       let prices: number[] = [];
 
@@ -259,11 +313,22 @@ class PriceUpdater {
 
       // Compute average price, non weighted
       prices = prices.filter(price => price > 0);
-      if (prices.length === 0) {
-        this.setLatestPrice(currency, -1);
-      } else {
-        this.setLatestPrice(currency, Math.round(getMedian(prices)));
+      newPrices[currency] = prices.length === 0 ? -1 : Math.round(getMedian(prices));
+    }
+
+    if (this.neoxaStartTime !== null) {
+      let neoxaUsd = -1;
+      try {
+        neoxaUsd = await this.neoxaFeed.$fetchPrice('USD');
+        logger.debug(`${this.neoxaFeed.name} BTCB2/USD price: ${neoxaUsd}`, logger.tags.mining);
+      } catch (e) {
+        logger.debug(`Could not fetch BTCB2/USD price at ${this.neoxaFeed.name}. Reason: ${(e instanceof Error ? e.message : e)}`, logger.tags.mining);
       }
+      Object.assign(newPrices, this.getNeoxaPrices(newPrices, neoxaUsd));
+    }
+
+    for (const currency of this.currencies) {
+      this.setLatestPrice(currency, newPrices[currency]);
     }
 
     if (config.FIAT_PRICE.API_KEY && this.latestPrices.USD > 0 && Object.keys(this.latestConversionsRatesFromFeed).length > 0) {
@@ -337,8 +402,8 @@ class PriceUpdater {
       logger.debug(`Inserted ${insertedCount} MtGox USD weekly price history into db`, logger.tags.mining);
     }
 
-    // Insert Kraken weekly prices
-    await new KrakenApi().$insertHistoricalPrice();
+    // Insert Kraken weekly prices (BTC prices are not valid past the neoxa start time)
+    await new KrakenApi().$insertHistoricalPrice(this.neoxaStartTime);
 
     // Insert missing recent hourly prices
     await this.$insertMissingRecentPrices('day');
@@ -394,6 +459,23 @@ class PriceUpdater {
       }
     }
 
+    // Past the neoxa start time, USD comes from neoxa.exchange and BTC prices are only used for the other currencies
+    let neoxaHistory: PriceHistory = {};
+    if (this.neoxaStartTime !== null) {
+      try {
+        neoxaHistory = await this.neoxaFeed.$fetchRecentPrice(this.currencies, type);
+      } catch (e) {
+        logger.err(`Cannot fetch ${type === 'day' ? 'dai' : 'hour'}ly historical price from ${this.neoxaFeed.name}. Reason: ${e instanceof Error ? e.message : e}`, logger.tags.mining);
+      }
+      for (const time in neoxaHistory) {
+        if (parseInt(time, 10) >= this.neoxaStartTime && !existingPriceTimes.includes(parseInt(time, 10)) && grouped[time] === undefined) {
+          grouped[time] = {
+            USD: [], EUR: [], GBP: [], CAD: [], CHF: [], AUD: [], JPY: []
+          };
+        }
+      }
+    }
+
     // Average prices and insert everything into the db
     let totalInserted = 0;
     for (const time in grouped) {
@@ -403,6 +485,13 @@ class PriceUpdater {
           continue;
         }
         prices[currency] = Math.round(getMedian(grouped[time][currency]));
+      }
+      if (this.neoxaStartTime !== null && parseInt(time, 10) >= this.neoxaStartTime) {
+        const neoxaUsd = neoxaHistory[time]?.USD ?? -1;
+        if (!(neoxaUsd > 0)) {
+          continue; // Never save a BTC price past the neoxa start time
+        }
+        Object.assign(prices, this.getNeoxaPrices(prices, neoxaUsd));
       }
       await PricesRepository.$savePrices(parseInt(time, 10), prices);
       ++totalInserted;

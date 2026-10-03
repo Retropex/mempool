@@ -61,7 +61,7 @@ class KrakenApi implements PriceFeed {
    * Fetch weekly price and save it into the database
    * @asyncUnsafe
    */
-  public async $insertHistoricalPrice(): Promise<void> {
+  public async $insertHistoricalPrice(maxTime: number | null = null): Promise<void> {
     const existingPriceTimes = await PricesRepository.$getPricesTimes();
 
     // EUR weekly price history goes back to timestamp 1378339200 (September 5, 2013)
@@ -80,6 +80,9 @@ class KrakenApi implements PriceFeed {
 
       for (const price of priceHistoryRaw) {
         if (existingPriceTimes.includes(parseInt(price[0]))) {
+          continue;
+        }
+        if (maxTime !== null && parseInt(price[0]) >= maxTime) {
           continue;
         }
 
